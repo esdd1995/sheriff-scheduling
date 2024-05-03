@@ -65,12 +65,12 @@ The database will need your user ID in the "User" table. Access to the Docker DB
 ```
 INSERT INTO public."User"(
 	"Id", "IdirName", "IdirId", "KeyCloakId", "IsEnabled", "FirstName", "LastName", "Email", "Discriminator", "HomeLocationId")
-	VALUES ('00000000-0000-0000-0000-000000000002', 'REPLACE_WITH_YOUR_IDIR_USERNAME', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', True, 'REPLACE_WITH_YOUR_FIRSTNAME', 'REPLACE_WITH_YOUR_LASTNAME', 'REPLACE_WITH_YOUR_EMAIL@gov.bc.ca', 'User', 6);
+	VALUES ('00000000-0000-0000-0000-000000000002', 'REPLACE_WITH_YOUR_IDIR_USERNAME', 'REPLACE_WITH_YOUR_IDIR_USER_GUID', 'REPLACE_WITH_YOUR_IDIR_USER_GUID', True, 'REPLACE_WITH_YOUR_FIRSTNAME', 'REPLACE_WITH_YOUR_LASTNAME', 'REPLACE_WITH_YOUR_EMAIL@gov.bc.ca', 'Sheriff', 6);
 insert into "UserRole" ("UserId", "RoleId", "EffectiveDate")
 values ('00000000-0000-0000-0000-000000000002', 1, '2024-01-01');
 ```
 
-One last piece is to update the record in the "User" table so that the IdirId value is the proper uuid. This can be obtained by running the application locally as below, then decoding the token (use https://jwt.io/) from the Bearer token. You can get the proper value for the IdirId in `sid` property in the decoded jwt and update the User table appropriately.
+One last piece is to update the record in the "User" table so that the IdirId value is the proper uuid. This can be obtained by running the application locally as below, then decoding the token (use https://jwt.io/) from the Bearer token. You can get the proper value for the IdirId in `idir_user_guid` property in the decoded jwt and update the User table appropriately.
 
 ## Using the Application
 

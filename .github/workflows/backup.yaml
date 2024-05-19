@@ -25,8 +25,9 @@ jobs:
           repository: BCDevOps/backup-container.git
           ref: master                    
 
-      - name: Docker Build Schema Spy Image
+      - name: Docker Build Backup Image
         run: |
+          cd docker
           docker build --tag backup . 
           docker tag schema-spy artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
 

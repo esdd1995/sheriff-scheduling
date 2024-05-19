@@ -28,7 +28,7 @@ jobs:
       - name: Docker Build Backup Image
         run: |
           cd docker
-          docker build --tag backup . 
-          docker tag schema-spy artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
+          docker build --tag {{ env.IMAGE_NAME }} . 
+          docker tag {{ env.IMAGE_NAME }} artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
 
 

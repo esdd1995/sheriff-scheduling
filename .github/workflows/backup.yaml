@@ -1,9 +1,9 @@
-name: Schema-Spy
+name: Backup
 
 on:
   workflow_dispatch:
 env:
-  IMAGE_NAME: schema-spy
+  IMAGE_NAME: backup
   WORKING_DIRECTORY: ./
 jobs:
   build:
@@ -22,12 +22,12 @@ jobs:
         id: gitops
         uses: actions/checkout@v4
         with:
-          repository: bcgov/SchemaSpy.git
+          repository: BCDevOps/backup-container.git
           ref: master                    
 
       - name: Docker Build Schema Spy Image
         run: |
-          docker build --tag schema-spy . 
+          docker build --tag backup . 
           docker tag schema-spy artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
 
 

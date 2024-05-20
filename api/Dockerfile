@@ -11,13 +11,15 @@ FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 
 WORKDIR /src
 
-COPY ["api.csproj", "."]
-RUN dotnet restore .
+COPY ["api/api.csproj", "api"]
+COPY ["db/db.csproj", "db"]
+RUN dotnet restore api
+RUN dotnet restore db
 COPY . .
 
 # build
 FROM build AS publish
-RUN dotnet publish "api.csproj" -c Release -o /app/publish --runtime linux-musl-x64 --no-self-contained
+RUN dotnet publish "api/api.csproj" -c Release -o /app/publish --runtime linux-musl-x64 --no-self-contained
 
 FROM base AS final
 

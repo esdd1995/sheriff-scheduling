@@ -22,7 +22,7 @@ jobs:
         id: gitops
         uses: actions/checkout@v4
         
-      - name: Docker Build Backup Image
+      - name: Docker Build Image
         run: |
           cd api
           docker build --tag ${{ env.IMAGE_NAME }} . 

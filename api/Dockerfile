@@ -13,8 +13,8 @@ WORKDIR /src
 
 COPY ["api/api.csproj", "api/"]
 COPY ["db/db.csproj", "db/"]
-RUN dotnet restore api
-RUN dotnet restore db
+RUN dotnet restore api/api.csproj
+RUN dotnet restore db/db.csproj
 COPY . .
 RUN dotnet build "api/api.csproj" -c Release
 # build

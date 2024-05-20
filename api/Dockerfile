@@ -9,11 +9,6 @@ ENV VERSION=$VERSION
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 
-# install diagnostics tools
-RUN dotnet tool install --tool-path /tools dotnet-trace
-RUN dotnet tool install --tool-path /tools dotnet-counters
-RUN dotnet tool install --tool-path /tools dotnet-dump
-
 WORKDIR /src
 
 COPY ["api.csproj", "."]

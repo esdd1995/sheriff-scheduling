@@ -30,5 +30,6 @@ jobs:
           cd docker
           docker build --tag ${{ env.IMAGE_NAME }} . 
           docker tag ${{ env.IMAGE_NAME }} artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
+          docker push artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}
 
 

@@ -27,8 +27,8 @@ jobs:
 
       - name: Docker Build Schema Spy Image
         run: |
-          docker build --tag schema-spy . 
-          docker tag schema-spy artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
+          docker build --tag ${{ env.IMAGE_NAME }} . 
+          docker tag ${{ env.IMAGE_NAME }} artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
           docker push artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}
 
 

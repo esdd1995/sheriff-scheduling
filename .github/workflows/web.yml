@@ -3,7 +3,7 @@ name: Web
 on:
   workflow_dispatch:
 env:
-  IMAGE_NAME: ss-web
+  IMAGE_NAME: web
   WORKING_DIRECTORY: ./
 jobs:
   builds:

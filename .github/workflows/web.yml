@@ -1,0 +1,33 @@
+name: Build & Push web Image to Artifactory
+
+on:
+  workflow_dispatch:
+env:
+  IMAGE_NAME: ss-web
+  WORKING_DIRECTORY: ./
+jobs:
+  builds:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to Artifactory
+        uses: docker/login-action@v1
+        with:
+          registry: artifacts.developer.gov.bc.ca
+          username: ${{ secrets.ARTIFACTORY_USERNAME }}
+          password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+      - name: Checkout Repo
+        id: gitops
+        uses: actions/checkout@v4                            
+          
+      - name: Docker Build Image
+        run: |          
+          docker build --tag nginx-runtime -f docker/nginx-runtime/Dockerfile ./docker/nginx-runtime/
+          cd web
+          docker build --tag ss-web-artifacts -f Dockerfile.node . --build-arg WEB_BASE_HREF=${{ secrets.WEB_BASE_HREF }}
+          cd ..
+          docker build --tag ${{ env.IMAGE_NAME }} -f docker/vue-on-nginx/Dockerfile ./docker/vue-on-nginx/
+          docker tag ${{ env.IMAGE_NAME }} artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:latest
+          docker push artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}
+      

@@ -1,4 +1,4 @@
-name: Build & Push web Image to Artifactory
+name: Web
 
 on:
   workflow_dispatch:

@@ -12,7 +12,6 @@ jobs:
     steps:      
 
       - name: Checkout Repo
-        id: gitops
         uses: actions/checkout@v4
 
       - name: Login to Artifactory

@@ -200,28 +200,32 @@
 
         public extractAwayLocations ()
         {
-            this.assignedAwayLocations = this.userToEdit.awayLocation? this.userToEdit.awayLocation: [];
-            for(const inx in this.assignedAwayLocations)
-            {
-                const location = this.getLocation(this.assignedAwayLocations[inx].locationId)
-                this.assignedAwayLocations[inx]['locationNm'] = location? location.name : '';
+            const url = `api/sheriff/${this.userToEdit.id}/awaylocations`;
 
-                if(Vue.filter('isDateFullday')(this.assignedAwayLocations[inx].startDate,this.assignedAwayLocations[inx].endDate)){ 
-                    this.assignedAwayLocations[inx]['isFullDay'] = true;
-                    this.assignedAwayLocations[inx]['_cellVariants'] = {isFullDay:'danger'}                 
-                }else{
-                    this.assignedAwayLocations[inx]['isFullDay'] = false;
-                    this.assignedAwayLocations[inx]['_cellVariants'] = {isFullDay:'success'}                    
+            this.$http.get(url).then((response) => {
+                this.assignedAwayLocations = response.data? response.data: [];
+                for(const inx in this.assignedAwayLocations)
+                {
+                    const location = this.getLocation(this.assignedAwayLocations[inx].locationId)
+                    this.assignedAwayLocations[inx]['locationNm'] = location? location.name : '';
+
+                    if(Vue.filter('isDateFullday')(this.assignedAwayLocations[inx].startDate,this.assignedAwayLocations[inx].endDate)){ 
+                        this.assignedAwayLocations[inx]['isFullDay'] = true;
+                        this.assignedAwayLocations[inx]['_cellVariants'] = {isFullDay:'danger'}                 
+                    }else{
+                        this.assignedAwayLocations[inx]['isFullDay'] = false;
+                        this.assignedAwayLocations[inx]['_cellVariants'] = {isFullDay:'success'}                    
+                    }
+                    const timezone = location? location.timezone : 'UTC';
+                    this.currentTime = moment(new Date()).tz(timezone).format();
+                    this.assignedAwayLocations[inx].startDate = moment(this.assignedAwayLocations[inx].startDate).tz(timezone).format();
+                    this.assignedAwayLocations[inx].endDate = moment(this.assignedAwayLocations[inx].endDate).tz(timezone).format();
+                    this.currentTime = moment(new Date()).tz(timezone).format();            
+                    this.assignedAwayLocations[inx]['_rowVariant'] = '';
+                    if(this.assignedAwayLocations[inx].endDate < this.currentTime)
+                            this.assignedAwayLocations[inx]['_rowVariant'] = 'info';                            
                 }
-                const timezone = location? location.timezone : 'UTC';
-                this.currentTime = moment(new Date()).tz(timezone).format();
-                this.assignedAwayLocations[inx].startDate = moment(this.assignedAwayLocations[inx].startDate).tz(timezone).format();
-                this.assignedAwayLocations[inx].endDate = moment(this.assignedAwayLocations[inx].endDate).tz(timezone).format();
-                this.currentTime = moment(new Date()).tz(timezone).format();            
-                this.assignedAwayLocations[inx]['_rowVariant'] = '';
-                if(this.assignedAwayLocations[inx].endDate < this.currentTime)
-                        this.assignedAwayLocations[inx]['_rowVariant'] = 'info';                            
-            }
+            });    
         }
 
         public confirmDeleteLocation(location) {

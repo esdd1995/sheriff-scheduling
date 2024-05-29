@@ -10,10 +10,12 @@ using SS.Api.helpers;
 using SS.Api.helpers.extensions;
 using SS.Api.infrastructure.authorization;
 using SS.Api.infrastructure.exceptions;
+using SS.Api.models.dto.generated;
 using SS.Api.Models.DB;
 using SS.Api.services.scheduling;
 using SS.Common.helpers.extensions;
 using SS.Db.models;
+using SS.Db.models.auth;
 using SS.Db.models.scheduling;
 using SS.Db.models.sheriff;
 
@@ -99,7 +101,7 @@ namespace SS.Api.services.usermanagement
             var minDateForAwayAndTraining = DateTimeOffset.UtcNow.AddDays(-daysPrevious);
             var sevenDaysFromNow = DateTimeOffset.UtcNow.AddDays(7);
 
-            return await Db.Sheriff.AsNoTracking().AsSingleQuery()
+            return await Db.Sheriff.AsNoTracking()
                 .ApplyPermissionFilters(User, minDateForAwayAndTraining, sevenDaysFromNow, Db)
                 .Include(s => s.HomeLocation)
                 .Include(s => s.AwayLocation.Where(al => al.EndDate >= minDateForAwayAndTraining && al.ExpiryDate == null))
@@ -112,6 +114,63 @@ namespace SS.Api.services.usermanagement
                 .ThenInclude(ur => ur.Role)
                 .Include(s => s.ActingRank.Where(ar => ar.ExpiryDate == null))
                 .SingleOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task<Sheriff> GetSheriffIdentification(Guid id)
+        {
+            var daysPrevious = int.Parse(Configuration.GetNonEmptyValue("DaysInPastToIncludeAwayLocationAndTraining"));
+            var minDateForAwayAndTraining = DateTimeOffset.UtcNow.AddDays(-daysPrevious);
+            var sevenDaysFromNow = DateTimeOffset.UtcNow.AddDays(7);
+
+            return await Db.Sheriff.AsNoTracking()
+                .ApplyPermissionFilters(User, minDateForAwayAndTraining, sevenDaysFromNow, Db)
+                .Include(s => s.HomeLocation)
+                .SingleOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task<List<SheriffLeave>> GetSheriffLeaves(Guid id)
+        {
+            var daysPrevious = int.Parse(Configuration.GetNonEmptyValue("DaysInPastToIncludeAwayLocationAndTraining"));
+            var minDateForAwayAndTraining = DateTimeOffset.UtcNow.AddDays(-daysPrevious);
+
+            return await Db.SheriffLeave.AsNoTracking()
+                .Where(l => l.SheriffId == id && l.EndDate >= minDateForAwayAndTraining && l.ExpiryDate == null)
+                .Include(l => l.LeaveType)
+                .ToListAsync();
+        }
+
+        public async Task<List<SheriffAwayLocation>> GetSheriffAwayLocations(Guid id)
+        {
+            var daysPrevious = int.Parse(Configuration.GetNonEmptyValue("DaysInPastToIncludeAwayLocationAndTraining"));
+            var minDateForAwayAndTraining = DateTimeOffset.UtcNow.AddDays(-daysPrevious);
+
+            return await Db.SheriffAwayLocation.AsNoTracking()
+                .Where(al => al.SheriffId == id && al.EndDate >= minDateForAwayAndTraining && al.ExpiryDate == null)
+                .Include(al => al.Location)
+                .ToListAsync();
+        }
+
+        public async Task<List<SheriffActingRank>> GetSheriffActingRanks(Guid id)
+        {
+            return await Db.SheriffActingRank.AsNoTracking()
+                .Where(ar => ar.SheriffId == id && ar.ExpiryDate == null)
+                .ToListAsync();
+        }
+
+        public async Task<List<UserRole>> GetSheriffRoles(Guid id)
+        {
+            return await Db.UserRole.AsNoTracking()
+                .Where(ur => ur.UserId == id)
+                .Include(ur => ur.Role)
+                .ToListAsync();
+        }
+
+        public async Task<List<SheriffTraining>> GetSheriffTrainings(Guid id)
+        {
+            return await Db.SheriffTraining.AsNoTracking()
+                .Where(t => t.SheriffId == id && t.ExpiryDate == null)
+                .Include(t => t.TrainingType)
+                .ToListAsync();
         }
 
         public async Task<Sheriff> UpdateSheriff(Sheriff sheriff, bool canEditIdir)
@@ -168,7 +227,7 @@ namespace SS.Api.services.usermanagement
         {
             var savedSheriff = await Db.Sheriff.FindAsync(sheriff.Id);
             savedSheriff.ThrowBusinessExceptionIfNull($"No {nameof(Sheriff)} with Id: {sheriff.Id}");
-            savedSheriff.Excused = sheriff.Excused;            
+            savedSheriff.Excused = sheriff.Excused;
             await Db.SaveChangesAsync();
             return savedSheriff;
         }
@@ -344,7 +403,7 @@ namespace SS.Api.services.usermanagement
             var daysPrevious = int.Parse(Configuration.GetNonEmptyValue("DaysInPastToIncludeAwayLocationAndTraining"));
             var minDateForAwayAndTraining = DateTimeOffset.UtcNow.AddDays(-daysPrevious);
             var sevenDaysFromNow = DateTimeOffset.UtcNow.AddDays(7);
-                        
+
             var sheriffQuery = Db.Sheriff.AsNoTracking()
                 .AsSplitQuery()
                 .ApplyPermissionFilters(User, minDateForAwayAndTraining, sevenDaysFromNow, Db)

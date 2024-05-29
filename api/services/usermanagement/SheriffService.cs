@@ -101,7 +101,7 @@ namespace SS.Api.services.usermanagement
             var minDateForAwayAndTraining = DateTimeOffset.UtcNow.AddDays(-daysPrevious);
             var sevenDaysFromNow = DateTimeOffset.UtcNow.AddDays(7);
 
-            return await Db.Sheriff.AsNoTracking()
+            return await Db.Sheriff.AsNoTracking().AsSingleQuery()
                 .ApplyPermissionFilters(User, minDateForAwayAndTraining, sevenDaysFromNow, Db)
                 .Include(s => s.HomeLocation)
                 .Include(s => s.AwayLocation.Where(al => al.EndDate >= minDateForAwayAndTraining && al.ExpiryDate == null))

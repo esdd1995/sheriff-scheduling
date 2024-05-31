@@ -215,33 +215,36 @@
         }
 
         public extractLeaves () {   
-                     
-            const assignedLeavesJson = this.userToEdit.leave? this.userToEdit.leave: [];
-            for(const leaveJson of assignedLeavesJson){                
-                const leave = {} as userLeaveInfoType;
-                leave.id = leaveJson.id;
-                leave.leaveType = leaveJson.leaveType;
-                leave.leaveTypeId = leaveJson.leaveTypeId;
-                leave.leaveName = leaveJson.leaveType?leaveJson.leaveType.description: '';
-                leave.comment = leaveJson.comment?leaveJson.comment:'';               
+            const url = `api/sheriff/${this.userToEdit.id}/leaves`;
 
-                if(Vue.filter('isDateFullday')(leaveJson.startDate,leaveJson.endDate)){ 
-                    leave.isFullDay = true;
-                    leave['_cellVariants'] = {isFullDay:'danger'}                 
-                } else{
-                    leave.isFullDay = false;
-                    leave['_cellVariants'] = {isFullDay:'success'}                    
+            this.$http.get(url).then((response) => {        
+                const assignedLeavesJson = response?.data ? response.data: [];
+                for(const leaveJson of assignedLeavesJson){                
+                    const leave = {} as userLeaveInfoType;
+                    leave.id = leaveJson.id;
+                    leave.leaveType = leaveJson.leaveType;
+                    leave.leaveTypeId = leaveJson.leaveTypeId;
+                    leave.leaveName = leaveJson.leaveType?leaveJson.leaveType.description: '';
+                    leave.comment = leaveJson.comment?leaveJson.comment:'';               
+
+                    if(Vue.filter('isDateFullday')(leaveJson.startDate,leaveJson.endDate)){ 
+                        leave.isFullDay = true;
+                        leave['_cellVariants'] = {isFullDay:'danger'}                 
+                    } else{
+                        leave.isFullDay = false;
+                        leave['_cellVariants'] = {isFullDay:'success'}                    
+                    }
+                    
+                    leave.startDate = moment(leaveJson.startDate).tz(this.timezone).format();
+                    leave.endDate = moment(leaveJson.endDate).tz(this.timezone).format();
+                    leave['_rowVariant'] = '';
+                    if(leave.endDate < this.currentTime)
+                            leave['_rowVariant'] = 'info'; 
+                    this.assignedLeaves.push(leave);               
                 }
                 
-                leave.startDate = moment(leaveJson.startDate).tz(this.timezone).format();
-                leave.endDate = moment(leaveJson.endDate).tz(this.timezone).format();
-                leave['_rowVariant'] = '';
-                if(leave.endDate < this.currentTime)
-                        leave['_rowVariant'] = 'info'; 
-                this.assignedLeaves.push(leave);               
-            }
-            
-            this.loadLeaveTypes();
+                this.loadLeaveTypes();
+            });
         }
 
         public loadLeaveTypes() {

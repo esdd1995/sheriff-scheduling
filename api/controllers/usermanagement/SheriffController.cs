@@ -37,7 +37,7 @@ namespace SS.Api.controllers.usermanagement
         // ReSharper disable once InconsistentNaming
         private readonly long _uploadPhotoSizeLimitKB;
 
-        public SheriffController(SheriffService sheriffService, DutyRosterService dutyRosterService, ShiftService shiftService, UserService userUserService,TrainingService trainingService, IConfiguration configuration, SheriffDbContext db) : base(userUserService)
+        public SheriffController(SheriffService sheriffService, DutyRosterService dutyRosterService, ShiftService shiftService, UserService userUserService, TrainingService trainingService, IConfiguration configuration, SheriffDbContext db) : base(userUserService)
         {
             SheriffService = sheriffService;
             ShiftService = shiftService;
@@ -90,6 +90,96 @@ namespace SS.Api.controllers.usermanagement
             //Prevent exposing Idirs to regular users.
             sheriffDto.IdirName = User.HasPermission(Permission.EditIdir) ? sheriff.IdirName : null;
             return Ok(sheriffDto);
+        }
+
+        /// <summary>
+        /// Get Sheriff Identification data.
+        /// </summary>
+        /// <param name="id">Guid of the userid.</param>
+        /// <returns>SheriffWithIdirDto</returns>
+        [HttpGet]
+        [PermissionClaimAuthorize(perm: Permission.Login)]
+        [Route("{id}/identification")]
+        public async Task<ActionResult<SheriffWithIdirDto>> GetSheriffIdentification(Guid id)
+        {
+            Sheriff sheriffIdentification = await SheriffService.GetSheriffIdentification(id);
+            if (sheriffIdentification == null) return NotFound(CouldNotFindSheriffError);
+            if (!PermissionDataFiltersExtensions.HasAccessToLocation(User, Db, sheriffIdentification.HomeLocationId)) return Forbid();
+
+            SheriffWithIdirDto sheriffDto = sheriffIdentification.Adapt<SheriffWithIdirDto>();
+            //Prevent exposing Idirs to regular users.
+            sheriffDto.IdirName = User.HasPermission(Permission.EditIdir) ? sheriffIdentification.IdirName : null;
+            return Ok(sheriffDto);
+        }
+
+        /// <summary>
+        /// Get  Sheriff Leaves.
+        /// </summary>
+        /// <param name="id">Guid of the userid.</param>
+        /// <returns>SheriffLeaveDto[]</returns>
+        [HttpGet]
+        [PermissionClaimAuthorize(perm: Permission.Login)]
+        [Route("{id}/leaves")]
+        public async Task<ActionResult<List<SheriffLeaveDto>>> GetSheriffLeaves(Guid id)
+        {
+            List<SheriffLeave> sheriffLeave = await SheriffService.GetSheriffLeaves(id);
+            return Ok(sheriffLeave.Adapt<List<SheriffLeaveDto>>());
+        }
+
+        /// <summary>
+        /// Get Sheriff AwayLocations.
+        /// </summary>
+        /// <param name="id">Guid of the userid.</param>
+        /// <returns>SheriffAwayLocationDto[]</returns>
+        [HttpGet]
+        [PermissionClaimAuthorize(perm: Permission.Login)]
+        [Route("{id}/awaylocations")]
+        public async Task<ActionResult<List<SheriffAwayLocationDto>>> GetSheriffAwayLocations(Guid id)
+        {
+            List<SheriffAwayLocation> sheriffAwayLocations = await SheriffService.GetSheriffAwayLocations(id);
+            return Ok(sheriffAwayLocations.Adapt<List<SheriffAwayLocationDto>>());
+        }
+
+        /// <summary>
+        /// Get Sheriff Ranks.
+        /// </summary>
+        /// <param name="id">Guid of the userid.</param>
+        /// <returns>SheriffActingRankDto[]</returns>
+        [HttpGet]
+        [PermissionClaimAuthorize(perm: Permission.Login)]
+        [Route("{id}/actingranks")]
+        public async Task<ActionResult<List<SheriffActingRankDto>>> GetSheriffActingRanks(Guid id)
+        {
+            List<SheriffActingRank> sheriffActingRanks = await SheriffService.GetSheriffActingRanks(id);
+            return Ok(sheriffActingRanks.Adapt<List<SheriffActingRankDto>>());
+        }
+
+        /// <summary>
+        ///  Get Sheriff Roles.
+        /// </summary>
+        /// <param name="id">Guid of the userid.</param>
+        /// <returns>UserRoleDto[]</returns>
+        [HttpGet]
+        [PermissionClaimAuthorize(perm: Permission.Login)]
+        [Route("{id}/roles")]
+        public async Task<ActionResult<List<UserRoleDto>>> GetSheriffRoles(Guid id)
+        {
+            List<UserRole> sheriffRoles = await SheriffService.GetSheriffRoles(id);
+            return Ok(sheriffRoles.Adapt<List<UserRoleDto>>());
+        }
+
+        /// <summary>
+        /// Get Sheriff Trainings.
+        /// </summary>
+        /// <param name="id">Guid of the userid.</param>
+        /// <returns>SheriffTrainingDto[]</returns>
+        [HttpGet]
+        [PermissionClaimAuthorize(perm: Permission.Login)]
+        [Route("{id}/trainings")]
+        public async Task<ActionResult<List<SheriffTrainingDto>>> GetSheriffTrainings(Guid id)
+        {
+            List<SheriffTraining> sheriffTrainings = await SheriffService.GetSheriffTrainings(id);
+            return Ok(sheriffTrainings.Adapt<List<SheriffTrainingDto>>());
         }
 
         /// <summary>
@@ -159,7 +249,7 @@ namespace SS.Api.controllers.usermanagement
 
         [HttpPut]
         [Route("updateExcused")]
-        [PermissionClaimAuthorize(perm: Permission.GenerateReports)]        
+        [PermissionClaimAuthorize(perm: Permission.GenerateReports)]
         public async Task<ActionResult<SheriffDto>> UpdateExcused(Sheriff excusedSheriff)
         {
             var sheriff = await SheriffService.UpdateSheriffExcused(excusedSheriff);
@@ -296,7 +386,7 @@ namespace SS.Api.controllers.usermanagement
         public async Task<ActionResult> TrainingExpiryAdjustment()
         {
             await TrainingService.TrainingExpiryAdjustment();
-            return Ok(new { result = "success"});
+            return Ok(new { result = "success" });
         }
 
         #endregion SheriffTrainingReports

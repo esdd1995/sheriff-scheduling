@@ -17,8 +17,7 @@ jobs:
           username: ${{ secrets.ARTIFACTORY_USERNAME }}
           password: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - name: Checkout Repo
-        id: gitops
+      - name: Checkout Repo        
         uses: actions/checkout@v4                            
           
       - name: Docker Build Image

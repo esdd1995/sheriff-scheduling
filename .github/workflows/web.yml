@@ -28,7 +28,7 @@ jobs:
           cd ..
           docker build --tag ${{ env.IMAGE_NAME }} -f docker/vue-on-nginx/Dockerfile ./docker/vue-on-nginx/
           docker tag ${{ env.IMAGE_NAME }} artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:dev-${{ steps.short_sha.outputs.SHORT_SHA }}
-          docker push artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}
+          docker push artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:dev-${{ steps.short_sha.outputs.SHORT_SHA }}
       
       - name: Checkout ArgoCD Repo
         id: gitops

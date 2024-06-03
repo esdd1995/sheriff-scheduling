@@ -201,7 +201,7 @@
                     </b-col>
                     <b-col cols="9">
                         <b-card no-body >
-                            <b-tabs  card v-model="tabIndex" @activate-tab="onTabChanged">
+                            <b-tabs  card v-model="tabIndex" @activate-tab="onTabChanged" lazy>
                                 <b-tab title="Identification">
                                     <identification-tab 
                                         :runMethod="identificationTabMethods"                                         
@@ -639,7 +639,7 @@
 
         public loadUserDetails(userId): void {
             this.resetProfileWindowState();       
-            const url = 'api/sheriff/' + userId;
+            const url = `api/sheriff/${userId}/identification`;
             this.$http.get(url)
                 .then(response => {
                     if(response.data){                                              

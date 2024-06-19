@@ -266,8 +266,10 @@
                 <b-button style="margin:-2.95rem -0.75rem -2rem 1rem; width:2.5rem; height:2.5rem;" variant="outline-warning" class="text-light" @click="closeEditDutySheriffModalWindow()"
                 ><div style="transform:translate(0px,1px)">&times;</div></b-button>
             </template>
-        </b-modal>  
-
+        </b-modal> 
+         
+        <bulk-unassign-modal :showModal="showBulkUnassignModal" :dutyRostersJson="dutyRostersJson" @close="closeBulkUnassignModelWindow($event)"/>         
+ 
     </div>
 </template>
 
@@ -277,9 +279,10 @@
     import * as _ from 'underscore';
     import moment from 'moment-timezone';
     import AddDutySlotWeekForm from './AddDutySlotWeekForm.vue'
-    import {dutyRangeInfoType, dutySlotInfoType, assignDutySlotsInfoType, assignDutyInfoType, assignmentCardInfoType, dutyBlockWeekInfoType, myTeamShiftInfoType, selectedDutyCardInfoType, assignmentCardWeekInfoType } from '@/types/DutyRoster';
+    import {dutyRangeInfoType, dutySlotInfoType, assignDutySlotsInfoType, assignDutyInfoType, assignmentCardInfoType, dutyBlockWeekInfoType, myTeamShiftInfoType, selectedDutyCardInfoType, assignmentCardWeekInfoType, attachedDutyInfoType } from '@/types/DutyRoster';
     import {localTimeInfoType, userInfoType} from '@/types/common';
-    import SheriffModal from './SheriffModal.vue'
+    import SheriffModal from './SheriffModal.vue';
+    import BulkUnassignModal from '../../common/BulkUnassignModal.vue';
 
     import { namespace } from "vuex-class";
     import "@store/modules/CommonInformation";
@@ -290,7 +293,8 @@
     @Component({
         components: {
             AddDutySlotWeekForm,
-            SheriffModal
+            SheriffModal,
+            BulkUnassignModal
         }        
     })  
     export default class DutyCardWeekView extends Vue {
@@ -303,6 +307,9 @@
 
         @commonState.State
         public userDetails!: userInfoType;
+
+        @Prop({required: true})
+        dutyRostersJson!: attachedDutyInfoType[];
 
         @Prop({required: true})
         dutyRosterInfo!: assignmentCardInfoType;
@@ -370,6 +377,8 @@
         showEditDutySheriffModal = false;
         editingBlockId=''
 
+        showBulkUnassignModal = false;
+
         editDutyError = false;
         editDutyErrorMsg = '';
 
@@ -424,7 +433,7 @@
         }
 
         
-        public editDutySheriffModal(day, e?, blkId?){    
+        public editDutySheriffModal(day, e?, blkId?){  
             if(e?.ctrlKey == true){                
                 const block = this.dutyBlocks.filter(blk => blk.id==blkId)
                 const assignment = this.dutyRosterInfo.assignment+'D'+day
@@ -441,7 +450,10 @@
                 }                               
                 this.UpdateSelectedDuties(selectedDuties)
             }
-            else if (blkId.includes('i')){
+            else if (this.selectedDuties.length > 1 && this.shouldAllowBulkUnassign()) {
+                this.showBulkUnassignModal = true;
+                
+            } else if (blkId.includes('i')){
                 this.editDuty(day)            
             }
             else{
@@ -451,6 +463,16 @@
                 this.showEditDutySheriffModal = true;
                 this.isDutyDataMounted = true;
             }
+        }
+
+        shouldAllowBulkUnassign() {
+            // show if all the selectedDuites are assigned to a sheriff 
+            return this.selectedDuties.every((s) => 
+                s.dutyBlock?.every((d) => {
+                    if (!d.sheriffId || !d.dutyId) return false;
+                    return true;
+                })
+            )
         }
 
         public editDuty(day, e?, blkId?){
@@ -544,6 +566,13 @@
 			this.showEditDutySheriffModal = false;
 		}
 
+        public closeBulkUnassignModelWindow(refreshData: boolean) {
+            this.showBulkUnassignModal = false;
+            if (refreshData) {
+                this.$emit('change', this.scrollPositions()); 
+            }
+        }
+
         public closeDutySlotForm() {                     
             this.addNewDutySlotForm= false; 
             this.addFormColor = 'secondary';
@@ -571,7 +600,6 @@
         }
 
         public extractDuty(){
-
             for(let day=0; day<7; day++){            
                 if(this.dutyRosterInfo[day]){
                     const dutyInfo = this.dutyRosterInfo[day];

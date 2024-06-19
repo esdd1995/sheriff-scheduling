@@ -42,7 +42,7 @@
                 </template>
 
                 <template v-slot:cell(h0)="data" >
-                    <duty-card-week-view v-on:change="getData" :dutyRosterInfo="data.item"/>
+                    <duty-card-week-view v-on:change="getData" :dutyRostersJson="dutyRostersJson" :dutyRosterInfo="data.item"/>
                 </template>
         </b-table>                
         

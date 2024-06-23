@@ -41,7 +41,7 @@ jobs:
         id: gitops
         uses: actions/checkout@v4
         with:
-          repository: bcgov-c/tenant-gitops-eb019f
+          repository: bcgov-c/tenant-gitops-cb6495
           ref: develop
           token: ${{ secrets.GIT_OPS_SSH_KEY }} # `GH_PAT` is a secret that contains your PAT
           path: gitops

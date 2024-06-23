@@ -59,7 +59,7 @@ jobs:
 
           sed -i "s/webtag: .*/webtag: dev-${{ steps.short_sha.outputs.SHORT_SHA }} # Image Updated on $DATETIME/" ../deploy/dev_values.yaml
 
-          sed -i "s/webtag: .*/webtag: dev-${{ steps.short_sha.outputs.SHORT_SHA }} # Image Updated on $DATETIME/" rcc-api/values.yaml
+          sed -i "s/webtag: .*/webtag: dev-${{ steps.short_sha.outputs.SHORT_SHA }} # Image Updated on $DATETIME/" web/values.yaml
           
           # Commit and push the changes
           git config --global user.email "actions@github.com"

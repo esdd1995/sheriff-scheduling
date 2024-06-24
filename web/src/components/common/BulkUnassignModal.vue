@@ -126,13 +126,16 @@
     
         mounted() {
             this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
-                
                 const constructDutyBlocks: Array<dutyBlockWeekInfoType & { assignmentName: string }> = [];
                 this.selectedDuties.forEach((sd) => {
                     sd.dutyBlock?.forEach((db) => {
                         const assignmentId = this.dutyRostersJson.find((dr) => dr.id === db.dutyId)?.assignmentId;
                         const findAssignment = this.dutyRosterAssignmentsWeek.find((aw) => aw.assignmentDetail.id === assignmentId);
-                        const assignmentName = findAssignment?.assignmentDetail?.name ? findAssignment.assignmentDetail.name : '';
+                        
+                        let assignmentName = '';
+
+                        if (findAssignment?.assignmentDetail?.name) assignmentName = findAssignment.assignmentDetail.name; 
+                        else if (findAssignment?.assignmentDetail?.lookupCode?.code) assignmentName = findAssignment.assignmentDetail.lookupCode.code;
 
                         constructDutyBlocks.push({...db, assignmentName: assignmentName});
                     });

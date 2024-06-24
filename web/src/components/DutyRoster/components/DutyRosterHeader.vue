@@ -83,6 +83,18 @@
 							/>
 					</b-tabs>
 				</b-navbar-nav>
+				<b-navbar-nav >
+					<b-button
+						v-b-tooltip.hover.noninteractive
+						title="Populate Assignment Duties"							
+						style="max-height: 40px;" 
+						size="sm"
+						variant="white"						
+						@click="populateAssignmentDutiedForTheWeek()" 
+						class="my-1 mr-3">
+						<b-icon icon="file-plus" font-scale="2.0" variant="white"/>
+					</b-button>						
+				</b-navbar-nav>
 				<b-navbar-nav v-if="sheriffFullview">
 					<b-button
 						v-b-tooltip.hover.noninteractive
@@ -373,6 +385,9 @@
 
 		@dutyState.State
         public sheriffFullview!: boolean;
+
+		@dutyState.State
+        public dutyRangeInfo!: dutyRangeInfoType;
 		
 		@dutyState.Action
         public UpdateDisplayFuelGauge!: (newDisplayFuelGauge: boolean) => void
@@ -459,6 +474,8 @@
 		assignmentError = false;
 		assignmentErrorMsg = '';
 		assignmentErrorMsgDesc = '';
+
+		weekDayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
         mounted() {
 			this.runMethod.$on('addassign', this.addAssignment)			
@@ -763,6 +780,99 @@
 					this.assignmentErrorMsgDesc = errMsg;
 					this.assignmentError = true;
 				})
+		}
+
+		public populateAssignmentDutiedForTheWeek() {
+			// Get all assignment for the current location for the current date range
+			const assignmentsQueryString = `?locationId=${this.location.id}&start=${this.dutyRangeInfo.startDate}&end=${this.dutyRangeInfo.endDate}`;
+			const assignmentUrl = `api/assignment${assignmentsQueryString}`;
+
+			this.$http.get(assignmentUrl).then((response) => {
+				const assignments = response.data;
+
+				if (assignments) {
+					const dutyRosters: Array<{
+						startDate: string; 
+						endDate: string;
+						locationId: number;
+						assignmentId: number;
+						timezone: string;
+						concurrencyToken: 0;
+					}> = [];
+					
+					assignments.forEach((assignment) => {
+						const splitStartTime = assignment.start.split(":");
+						const splitEndTime = assignment.end.split(":");
+
+						if (this.activetab === 'Day') {
+							const startDate = moment(this.dutyRangeInfo.startDate)
+								.tz(this.location.timezone)
+								.hours(splitStartTime[0])
+								.minutes(splitStartTime[1])
+								.seconds(splitStartTime[2])
+								.format();
+							
+							const endDate = moment(this.dutyRangeInfo.startDate)
+								.tz(this.location.timezone)
+								.hours(splitEndTime[0])
+								.minutes(splitEndTime[1])
+								.seconds(splitEndTime[1])
+								.format();
+
+							dutyRosters.push({
+								startDate: startDate, 
+								endDate: endDate,
+								locationId: this.location.id,
+								assignmentId: assignment.id,
+								timezone: this.location.timezone,
+								concurrencyToken: 0
+							});
+						} else {
+							this.weekDayNames.forEach((day, index) => {
+								if (!assignment[day]) return;
+															
+								const startDate = moment(this.dutyRangeInfo.startDate)
+									.tz(this.location.timezone)
+									.add(index, 'days')
+									.hours(splitStartTime[0])
+									.minutes(splitStartTime[1])
+									.seconds(splitStartTime[2])
+									.format();
+								
+								const endDate = moment(this.dutyRangeInfo.startDate)
+									.tz(this.location.timezone)
+									.add(index, 'days')
+									.hours(splitEndTime[0])
+									.minutes(splitEndTime[1])
+									.seconds(splitEndTime[1])
+									.format();
+	
+								dutyRosters.push({
+									startDate: startDate, 
+									endDate: endDate,
+									locationId: this.location.id,
+									assignmentId: assignment.id,
+									timezone: this.location.timezone,
+									concurrencyToken: 0
+								});
+							});
+						}
+
+					});
+					
+					const dutyRosterUrl = 'api/dutyroster';
+					// Construct duties for the date range 
+					this.$http.post(dutyRosterUrl, dutyRosters).then((res) => {
+						this.$emit('change', this.activetab);
+					}, err => {
+						this.errorText = err.response.statusText+' '+err.response.status + '  - ' + moment().format();
+						if (err.response.status != '401') {
+							this.openErrorModal=true;
+						} 
+					});
+				}
+			});
+
 		}
 
 		public tabChanged(tabInfo){

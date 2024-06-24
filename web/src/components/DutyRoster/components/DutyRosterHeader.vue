@@ -90,7 +90,7 @@
 						style="max-height: 40px;" 
 						size="sm"
 						variant="white"						
-						@click="populateAssignmentDutiedForTheWeek()" 
+						@click="populateAllAssignmentDutiesForTheCurrentDateRange()" 
 						class="my-1 mr-3">
 						<b-icon icon="file-plus" font-scale="2.0" variant="white"/>
 					</b-button>						
@@ -782,7 +782,7 @@
 				})
 		}
 
-		public populateAssignmentDutiedForTheWeek() {
+		public populateAllAssignmentDutiesForTheCurrentDateRange() {
 			// Get all assignment for the current location for the current date range
 			const assignmentsQueryString = `?locationId=${this.location.id}&start=${this.dutyRangeInfo.startDate}&end=${this.dutyRangeInfo.endDate}`;
 			const assignmentUrl = `api/assignment${assignmentsQueryString}`;

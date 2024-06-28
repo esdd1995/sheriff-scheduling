@@ -5,7 +5,7 @@
 				<b-navbar-nav>
 					<h3 style="width:11rem; margin-bottom: 0px;" class="text-white ml-2 mr-auto font-weight-normal">Duty Roster</h3>
 				</b-navbar-nav>
-				<b-navbar-nav v-if="activetab =='Day'">
+				<b-navbar-nav v-if="activeTab =='Day'">
 					<b-tabs nav-wrapper-class = "bg-primary text-dark"
 							active-nav-item-class="text-uppercase font-weight-bold text-warning bg-primary"                     
 							pills							
@@ -24,15 +24,15 @@
 					<b-button class="mr-1 text-white" @click="zoomInOut(10)" variant="transparant"><b-icon-zoom-in /></b-button>
 					<b-button class="text-white" @click="zoomInOut(-10)" variant="transparant"><b-icon-zoom-out /></b-button>
 				</b-navbar-nav>
-				<b-navbar-nav v-if="activetab!='Day'">
+				<b-navbar-nav v-if="activeTab!='Day'">
 					<h3 style="width:8rem; margin-bottom: 0px;" class="text-white ml-2 mr-auto font-weight-normal"></h3>
 				</b-navbar-nav>
 				<b-navbar-nav :class="{'custom-navbar':true, 'full-view':sheriffFullview}">
                     <b-col class="my-1">
-                        <b-row :style="activetab=='Day'?'width:17.75rem':'width:25.6rem'">
+                        <b-row :style="activeTab=='Day'?'width:17.75rem':'width:25.6rem'">
                             <b-button style=" height: 2rem;" size="sm" variant="secondary" @click="previousDateRange" class="my-0 mx-1"><b-icon-chevron-left /></b-button>
                             
-							<div v-if="activetab=='Day'" class="m-0 bg-white" style="padding:0.2rem 0.52rem; border-radius:3px; font-weight:bold;">{{selectedDate|beautify-date-weekday}}</div>
+							<div v-if="activeTab=='Day'" class="m-0 bg-white" style="padding:0.2rem 0.52rem; border-radius:3px; font-weight:bold;">{{selectedDate|beautify-date-weekday}}</div>
 							<div v-else class="m-0 p-1 bg-white" style=" border-radius:3px; font-weight:bold;">{{selectedDateBegin|beautify-date-weekday}} - {{selectedDateEnd|beautify-date-weekday}}</div>
 						
 							<b-form-datepicker
@@ -53,8 +53,8 @@
                         
                     </b-col>
                 </b-navbar-nav>
-				<b-navbar-nav v-if="activetab!='Day'" >
-					<b-tabs nav-wrapper-class = "bg-primary text-dark"
+				<b-navbar-nav v-if="activeTab!='Day'" >
+					<b-tabs v-model="activeHrsTabIndex" nav-wrapper-class = "bg-primary text-dark"
 							active-nav-item-class="text-uppercase font-weight-bold text-warning bg-primary"                     
 							pills							
 							no-body
@@ -64,12 +64,11 @@
 							:key="'tab-24h-'+index"                 
 							:title="tabMapping"
 							v-on:click="tab12h24hChanged(tabMapping)" 
-							v-bind:class="[ active24htab === tabMapping ? 'active p-0 my-0' : 'p-0 my-0' ]"
 							/>
 					</b-tabs>
 				</b-navbar-nav>
 				<b-navbar-nav v-if="!sheriffFullview">
-					<b-tabs nav-wrapper-class = "bg-primary text-dark my-1 p-0"
+					<b-tabs v-model="activeDayTabIndex" nav-wrapper-class = "bg-primary text-dark my-1 p-0"
 							active-nav-item-class="text-uppercase font-weight-bold text-warning bg-primary"                     
 							pills							
 							no-body
@@ -79,7 +78,6 @@
 							:key="'tab-day'+index"                 
 							:title="tabMapping"                 
 							v-on:click="tabChanged(tabMapping)" 
-							v-bind:class="[ activetab === tabMapping ? 'active p-0 my-0' : 'p-0 my-0' ]"
 							/>
 					</b-tabs>
 				</b-navbar-nav>
@@ -378,7 +376,16 @@
 		public UpdateDutyRangeInfo!: (newDutyRangeInfo: dutyRangeInfoType) => void
 		
 		@dutyState.Action
-        public UpdateView24h!: (newView24h: boolean) => void
+        public UpdateView24h!: (newView24h: boolean) => void;
+
+		@dutyState.State
+		public activeTab!: 'Day' | 'Week';
+
+		@dutyState.State
+		public view24h!: boolean;
+
+		@dutyState.Action
+		public UpdateActiveTab!: (activeTab: 'Day' | 'Week') => void;
 
 		@commonState.State
 		public userDetails!: userInfoType;
@@ -409,9 +416,10 @@
 
 		active24htab = '12h';
 		tabs12h24h = ['12h','24h'];
+		activeHrsTabIndex = 0;
 
-		activetab = 'Day';
 		tabs =['Day', 'Week']
+		activeDayTabIndex = 0;
 
 		activeMyTeamTab = 'Assignments View'
 		tabsMyTeamToggle = ['Assignments View', 'My Team View']
@@ -478,8 +486,15 @@
 		weekDayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
         mounted() {
-			this.runMethod.$on('addassign', this.addAssignment)			
-			this.selectedDate = moment().format().substring(0,10);			
+			this.runMethod.$on('addassign', this.addAssignment);
+
+			this.active24htab = this.view24h ? '24h': '12h';
+			this.activeHrsTabIndex = this.view24h ? 1 : 0;
+
+			this.activeDayTabIndex = this.activeTab === 'Week' ? 1 : 0;
+		
+			this.selectedDate = this.dutyRangeInfo?.startDate ? this.dutyRangeInfo.startDate : moment().format().substring(0,10);			
+			
 			this.loadNewDateRange();
 		}
 		
@@ -772,7 +787,7 @@
 				.then(response => {
 					if(response.data){
 							this.confirmedCloseAssignmentWindow();
-							this.$emit('change',this.activetab);
+							this.$emit('change',this.activeTab);
 					}
 				}, err => {
 					const errMsg = err.response.data;
@@ -804,7 +819,7 @@
 						const splitStartTime = assignment.start.split(":");
 						const splitEndTime = assignment.end.split(":");
 
-						if (this.activetab === 'Day') {
+						if (this.activeTab === 'Day') {
 							const startDate = moment(this.dutyRangeInfo.startDate)
 								.tz(this.location.timezone)
 								.hours(splitStartTime[0])
@@ -863,7 +878,7 @@
 					const dutyRosterUrl = 'api/dutyroster';
 					// Construct duties for the date range 
 					this.$http.post(dutyRosterUrl, dutyRosters).then((res) => {
-						this.$emit('change', this.activetab);
+						this.$emit('change', this.activeTab);
 					}, err => {
 						this.errorText = err.response.statusText+' '+err.response.status + '  - ' + moment().format();
 						if (err.response.status != '401') {
@@ -876,7 +891,8 @@
 		}
 
 		public tabChanged(tabInfo){
-			this.activetab = tabInfo;
+			this.activeTab = tabInfo;
+			this.UpdateActiveTab(tabInfo);
 			this.loadNewDateRange();
 		}
 
@@ -886,7 +902,8 @@
 				this.UpdateView24h(false)
 			else
 				this.UpdateView24h(true)
-			this.$emit('change',this.activetab);			
+			
+			this.$emit('change',this.activeTab);			
 		}
 
 		public tabMyTeamChanged(tabInfo){
@@ -906,25 +923,25 @@
 		}
 
 		public nextDateRange() {
-			const days =(this.activetab == 'Day')? 1 :7;		
+			const days =(this.activeTab == 'Day')? 1 :7;		
 			this.selectedDate = moment(this.selectedDate).add(days, 'days').format().substring(0,10);
 			this.loadNewDateRange(); 
 		}
 
 		public previousDateRange() {
-			const days =(this.activetab == 'Day')? 1 :7;
+			const days =(this.activeTab == 'Day')? 1 :7;
 			this.selectedDate = moment(this.selectedDate).subtract(days, 'days').format().substring(0,10);
 			this.loadNewDateRange();
 		}
 
 		public loadNewDateRange() {
 
-			const dateType = (this.activetab == 'Day')?'day':'week'
+			const dateType = (this.activeTab == 'Day')?'day':'week'
 			this.selectedDateBegin = moment(this.selectedDate).startOf(dateType).format()
 			this.selectedDateEnd = moment(this.selectedDate).endOf(dateType).format();
 			const dateRange = {startDate: this.selectedDateBegin, endDate: this.selectedDateEnd}
 			this.UpdateDutyRangeInfo(dateRange);
-			this.$emit('change',this.activetab); 
+			this.$emit('change',this.activeTab); 
 		}
 
 		public timeFormat(value , event) {

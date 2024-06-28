@@ -20,6 +20,8 @@ class DutyRosterInformation extends VuexModule {
   public dutyRosterAssignmentsWeek: assignmentCardWeekInfoType[] = [];
 
   public selectedDuties: selectedDutyCardInfoType[] = [];
+
+  public activeTab: 'Day' | 'Week' = 'Day';
   
   @Mutation
   public setDutyRangeInfo(dutyRangeInfo): void {   
@@ -29,6 +31,16 @@ class DutyRosterInformation extends VuexModule {
   @Action
   public UpdateDutyRangeInfo(newDutyRangeInfo): void {
     this.context.commit('setDutyRangeInfo', newDutyRangeInfo)
+  }
+
+  @Mutation
+  public setActiveTab(activeTab): void {   
+    this.activeTab = activeTab
+  }
+
+  @Action
+  public UpdateActiveTab(activeTab): void {
+    this.context.commit('setActiveTab', activeTab)
   }
 
   @Mutation

@@ -88,7 +88,7 @@
 						style="max-height: 40px;" 
 						size="sm"
 						variant="white"						
-						@click="populateAllAssignmentDutiesForTheCurrentDateRange()" 
+						@click="confirmPopulateAllAssignmentDuties()" 
 						class="my-1 mr-3">
 						<b-icon icon="file-plus" font-scale="2.0" variant="white"/>
 					</b-button>						
@@ -347,6 +347,22 @@
                 >&times;</b-button>
             </template>
         </b-modal>
+
+		<b-modal v-model="showConfirmPopulateAllAssignmentDuties" header-class="bg-warning text-light">
+            <template v-slot:modal-title>
+				<h2 class="mb-0 text-light"> Confirm Populate Assignments </h2>
+			</template>
+			<h4 >Are you sure you want to populate Duties for all Assignments shown in the current date range?</h4>           
+            <template v-slot:modal-footer>
+                <b-button variant="success" @click="populateAllAssignmentDutiesForTheCurrentDateRange()">Confirm</b-button>
+				<b-button variant="primary" @click="showConfirmPopulateAllAssignmentDuties=false">Cancel</b-button>
+            </template>            
+            <template v-slot:modal-header-close>                 
+                <b-button variant="outline-warning" class="text-light closeButton" @click="showConfirmPopulateAllAssignmentDuties=false">
+				&times;
+				</b-button>
+            </template>
+        </b-modal>
 		
 	</div>
 </template>
@@ -482,6 +498,8 @@
 		assignmentError = false;
 		assignmentErrorMsg = '';
 		assignmentErrorMsgDesc = '';
+
+		showConfirmPopulateAllAssignmentDuties = false;
 
 		weekDayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
@@ -797,7 +815,13 @@
 				})
 		}
 
+		public confirmPopulateAllAssignmentDuties() {
+			this.showConfirmPopulateAllAssignmentDuties = true;
+		}
+
 		public populateAllAssignmentDutiesForTheCurrentDateRange() {
+			this.showConfirmPopulateAllAssignmentDuties = false;
+
 			// Get all assignment for the current location for the current date range
 			const assignmentsQueryString = `?locationId=${this.location.id}&start=${this.dutyRangeInfo.startDate}&end=${this.dutyRangeInfo.endDate}`;
 			const assignmentUrl = `api/assignment${assignmentsQueryString}`;

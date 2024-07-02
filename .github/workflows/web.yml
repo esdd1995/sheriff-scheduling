@@ -31,7 +31,7 @@ jobs:
         run: |          
           docker build --tag nginx-runtime -f docker/nginx-runtime/Dockerfile ./docker/nginx-runtime/
           cd web
-          docker build --tag ss-web-artifacts -f Dockerfile.node . --build-arg WEB_BASE_HREF=${{ secrets.WEB_BASE_HREF }}
+          docker build --tag ss-web-artifacts -f Dockerfile.node . --build-arg WEB_BASE_HREF=${{ vars.WEB_BASE_HREF }}
           cd ..
           docker build --tag ${{ env.IMAGE_NAME }} -f docker/vue-on-nginx/Dockerfile ./docker/vue-on-nginx/
           docker tag ${{ env.IMAGE_NAME }} artifacts.developer.gov.bc.ca/ccb6-images/${{ env.IMAGE_NAME }}:dev-${{ steps.short_sha.outputs.SHORT_SHA }}

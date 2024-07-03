@@ -235,22 +235,26 @@
             this.assignedRoles =[];
             this.roleAssignError = false;
 
-            if (this.userToEdit.userRoles && this.userToEdit.userRoles.length>0) {
-                let userRole: userRoleJsonType;
-                for(userRole of this.userToEdit.userRoles) 
-                {                    
-                    this.assignedRoles.push({
-                        text:userRole.role.name, 
-                        desc: userRole.role.description, 
-                        value:userRole.role.id.toString(), 
-                        effectiveDate:moment(userRole.effectiveDate).tz(this.timezone).format(), 
-                        expiryDate:userRole.expiryDate?moment(userRole.expiryDate).tz(this.timezone).format():''
-                    })
+            const url = `api/sheriff/${this.userToEdit.id}/roles`;
+
+            this.$http.get(url).then((response) => {
+                if (response.data && response.data.length>0) {
+                    let userRole: userRoleJsonType;
+                    for(userRole of response.data) 
+                    {                    
+                        this.assignedRoles.push({
+                            text:userRole.role.name, 
+                            desc: userRole.role.description, 
+                            value:userRole.role.id.toString(), 
+                            effectiveDate:moment(userRole.effectiveDate).tz(this.timezone).format(), 
+                            expiryDate:userRole.expiryDate?moment(userRole.expiryDate).tz(this.timezone).format():''
+                        })
+                    }
                 }
-            }
-            
-            this.refreshTable++;
-            this.populateRolesDropdown();
+                
+                this.refreshTable++;
+                this.populateRolesDropdown();
+            });
         }
 
         public populateRolesDropdown() {

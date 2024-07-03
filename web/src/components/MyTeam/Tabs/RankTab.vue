@@ -190,27 +190,30 @@
 
         public extractActingRanks ()
         {
-            this.assignedActingRanks = this.userToEdit.actingRank? this.userToEdit.actingRank: [];
-            
-            
-            for(const inx in this.assignedActingRanks)
-            {
-                if(Vue.filter('isDateFullday')(this.assignedActingRanks[inx].startDate,this.assignedActingRanks[inx].endDate)){ 
-                    this.assignedActingRanks[inx]['isFullDay'] = true;
-                    this.assignedActingRanks[inx]['_cellVariants'] = {isFullDay:'danger'}                 
-                }else{
-                    this.assignedActingRanks[inx]['isFullDay'] = false;
-                    this.assignedActingRanks[inx]['_cellVariants'] = {isFullDay:'success'}                    
+            const url = `api/sheriff/${this.userToEdit.id}/actingranks`;
+
+            this.$http.get(url).then((response) => {
+                this.assignedActingRanks = response.data? response.data: [];
+                    
+                for(const inx in this.assignedActingRanks)
+                {
+                    if(Vue.filter('isDateFullday')(this.assignedActingRanks[inx].startDate,this.assignedActingRanks[inx].endDate)){ 
+                        this.assignedActingRanks[inx]['isFullDay'] = true;
+                        this.assignedActingRanks[inx]['_cellVariants'] = {isFullDay:'danger'}                 
+                    }else{
+                        this.assignedActingRanks[inx]['isFullDay'] = false;
+                        this.assignedActingRanks[inx]['_cellVariants'] = {isFullDay:'success'}                    
+                    }
+                    const timezone = this.assignedActingRanks[inx].timezone? this.assignedActingRanks[inx].timezone : 'UTC';
+                    this.currentTime = moment(new Date()).tz(timezone).format();
+                    this.assignedActingRanks[inx].startDate = moment(this.assignedActingRanks[inx].startDate).tz(timezone).format();
+                    this.assignedActingRanks[inx].endDate = moment(this.assignedActingRanks[inx].endDate).tz(timezone).format();
+                    this.currentTime = moment(new Date()).tz(timezone).format();            
+                    this.assignedActingRanks[inx]['_rowVariant'] = '';
+                    if(this.assignedActingRanks[inx].endDate < this.currentTime)
+                            this.assignedActingRanks[inx]['_rowVariant'] = 'info';                            
                 }
-                const timezone = this.assignedActingRanks[inx].timezone? this.assignedActingRanks[inx].timezone : 'UTC';
-                this.currentTime = moment(new Date()).tz(timezone).format();
-                this.assignedActingRanks[inx].startDate = moment(this.assignedActingRanks[inx].startDate).tz(timezone).format();
-                this.assignedActingRanks[inx].endDate = moment(this.assignedActingRanks[inx].endDate).tz(timezone).format();
-                this.currentTime = moment(new Date()).tz(timezone).format();            
-                this.assignedActingRanks[inx]['_rowVariant'] = '';
-                if(this.assignedActingRanks[inx].endDate < this.currentTime)
-                        this.assignedActingRanks[inx]['_rowVariant'] = 'info';                            
-            }
+            });
         }
 
         public addNewRank(){

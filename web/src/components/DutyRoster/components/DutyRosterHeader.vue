@@ -5,7 +5,7 @@
 				<b-navbar-nav>
 					<h3 style="width:11rem; margin-bottom: 0px;" class="text-white ml-2 mr-auto font-weight-normal">Duty Roster</h3>
 				</b-navbar-nav>
-				<b-navbar-nav v-if="activetab =='Day'">
+				<b-navbar-nav v-if="activeTab =='Day'">
 					<b-tabs nav-wrapper-class = "bg-primary text-dark"
 							active-nav-item-class="text-uppercase font-weight-bold text-warning bg-primary"                     
 							pills							
@@ -24,15 +24,15 @@
 					<b-button class="mr-1 text-white" @click="zoomInOut(10)" variant="transparant"><b-icon-zoom-in /></b-button>
 					<b-button class="text-white" @click="zoomInOut(-10)" variant="transparant"><b-icon-zoom-out /></b-button>
 				</b-navbar-nav>
-				<b-navbar-nav v-if="activetab!='Day'">
+				<b-navbar-nav v-if="activeTab!='Day'">
 					<h3 style="width:8rem; margin-bottom: 0px;" class="text-white ml-2 mr-auto font-weight-normal"></h3>
 				</b-navbar-nav>
 				<b-navbar-nav :class="{'custom-navbar':true, 'full-view':sheriffFullview}">
                     <b-col class="my-1">
-                        <b-row :style="activetab=='Day'?'width:17.75rem':'width:25.6rem'">
+                        <b-row :style="activeTab=='Day'?'width:17.75rem':'width:25.6rem'">
                             <b-button style=" height: 2rem;" size="sm" variant="secondary" @click="previousDateRange" class="my-0 mx-1"><b-icon-chevron-left /></b-button>
                             
-							<div v-if="activetab=='Day'" class="m-0 bg-white" style="padding:0.2rem 0.52rem; border-radius:3px; font-weight:bold;">{{selectedDate|beautify-date-weekday}}</div>
+							<div v-if="activeTab=='Day'" class="m-0 bg-white" style="padding:0.2rem 0.52rem; border-radius:3px; font-weight:bold;">{{selectedDate|beautify-date-weekday}}</div>
 							<div v-else class="m-0 p-1 bg-white" style=" border-radius:3px; font-weight:bold;">{{selectedDateBegin|beautify-date-weekday}} - {{selectedDateEnd|beautify-date-weekday}}</div>
 						
 							<b-form-datepicker
@@ -53,8 +53,8 @@
                         
                     </b-col>
                 </b-navbar-nav>
-				<b-navbar-nav v-if="activetab!='Day'" >
-					<b-tabs nav-wrapper-class = "bg-primary text-dark"
+				<b-navbar-nav v-if="activeTab!='Day'" >
+					<b-tabs v-model="activeHrsTabIndex" nav-wrapper-class = "bg-primary text-dark"
 							active-nav-item-class="text-uppercase font-weight-bold text-warning bg-primary"                     
 							pills							
 							no-body
@@ -64,12 +64,11 @@
 							:key="'tab-24h-'+index"                 
 							:title="tabMapping"
 							v-on:click="tab12h24hChanged(tabMapping)" 
-							v-bind:class="[ active24htab === tabMapping ? 'active p-0 my-0' : 'p-0 my-0' ]"
 							/>
 					</b-tabs>
 				</b-navbar-nav>
 				<b-navbar-nav v-if="!sheriffFullview">
-					<b-tabs nav-wrapper-class = "bg-primary text-dark my-1 p-0"
+					<b-tabs v-model="activeDayTabIndex" nav-wrapper-class = "bg-primary text-dark my-1 p-0"
 							active-nav-item-class="text-uppercase font-weight-bold text-warning bg-primary"                     
 							pills							
 							no-body
@@ -79,9 +78,20 @@
 							:key="'tab-day'+index"                 
 							:title="tabMapping"                 
 							v-on:click="tabChanged(tabMapping)" 
-							v-bind:class="[ activetab === tabMapping ? 'active p-0 my-0' : 'p-0 my-0' ]"
 							/>
 					</b-tabs>
+				</b-navbar-nav>
+				<b-navbar-nav >
+					<b-button
+						v-b-tooltip.hover.noninteractive
+						title="Populate Assignment Duties"							
+						style="max-height: 40px;" 
+						size="sm"
+						variant="white"						
+						@click="confirmPopulateAllAssignmentDuties()" 
+						class="my-1 mr-3">
+						<b-icon icon="file-plus" font-scale="2.0" variant="white"/>
+					</b-button>						
 				</b-navbar-nav>
 				<b-navbar-nav v-if="sheriffFullview">
 					<b-button
@@ -337,6 +347,22 @@
                 >&times;</b-button>
             </template>
         </b-modal>
+
+		<b-modal v-model="showConfirmPopulateAllAssignmentDuties" header-class="bg-warning text-light">
+            <template v-slot:modal-title>
+				<h2 class="mb-0 text-light"> Confirm Populate Assignments </h2>
+			</template>
+			<h4 >Are you sure you want to populate Duties for all Assignments shown in the current date range?</h4>           
+            <template v-slot:modal-footer>
+                <b-button variant="success" @click="populateAllAssignmentDutiesForTheCurrentDateRange()">Confirm</b-button>
+				<b-button variant="primary" @click="showConfirmPopulateAllAssignmentDuties=false">Cancel</b-button>
+            </template>            
+            <template v-slot:modal-header-close>                 
+                <b-button variant="outline-warning" class="text-light closeButton" @click="showConfirmPopulateAllAssignmentDuties=false">
+				&times;
+				</b-button>
+            </template>
+        </b-modal>
 		
 	</div>
 </template>
@@ -366,13 +392,25 @@
 		public UpdateDutyRangeInfo!: (newDutyRangeInfo: dutyRangeInfoType) => void
 		
 		@dutyState.Action
-        public UpdateView24h!: (newView24h: boolean) => void
+        public UpdateView24h!: (newView24h: boolean) => void;
+
+		@dutyState.State
+		public activeTab!: 'Day' | 'Week';
+
+		@dutyState.State
+		public view24h!: boolean;
+
+		@dutyState.Action
+		public UpdateActiveTab!: (activeTab: 'Day' | 'Week') => void;
 
 		@commonState.State
 		public userDetails!: userInfoType;
 
 		@dutyState.State
         public sheriffFullview!: boolean;
+
+		@dutyState.State
+        public dutyRangeInfo!: dutyRangeInfoType;
 		
 		@dutyState.Action
         public UpdateDisplayFuelGauge!: (newDisplayFuelGauge: boolean) => void
@@ -394,9 +432,10 @@
 
 		active24htab = '12h';
 		tabs12h24h = ['12h','24h'];
+		activeHrsTabIndex = 0;
 
-		activetab = 'Day';
 		tabs =['Day', 'Week']
+		activeDayTabIndex = 0;
 
 		activeMyTeamTab = 'Assignments View'
 		tabsMyTeamToggle = ['Assignments View', 'My Team View']
@@ -460,9 +499,20 @@
 		assignmentErrorMsg = '';
 		assignmentErrorMsgDesc = '';
 
+		showConfirmPopulateAllAssignmentDuties = false;
+
+		weekDayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+
         mounted() {
-			this.runMethod.$on('addassign', this.addAssignment)			
-			this.selectedDate = moment().format().substring(0,10);			
+			this.runMethod.$on('addassign', this.addAssignment);
+
+			this.active24htab = this.view24h ? '24h': '12h';
+			this.activeHrsTabIndex = this.view24h ? 1 : 0;
+
+			this.activeDayTabIndex = this.activeTab === 'Week' ? 1 : 0;
+		
+			this.selectedDate = this.dutyRangeInfo?.startDate ? this.dutyRangeInfo.startDate : moment().format().substring(0,10);			
+			
 			this.loadNewDateRange();
 		}
 		
@@ -755,7 +805,7 @@
 				.then(response => {
 					if(response.data){
 							this.confirmedCloseAssignmentWindow();
-							this.$emit('change',this.activetab);
+							this.$emit('change',this.activeTab);
 					}
 				}, err => {
 					const errMsg = err.response.data;
@@ -765,8 +815,108 @@
 				})
 		}
 
+		public confirmPopulateAllAssignmentDuties() {
+			this.showConfirmPopulateAllAssignmentDuties = true;
+		}
+
+		public populateAllAssignmentDutiesForTheCurrentDateRange() {
+			this.showConfirmPopulateAllAssignmentDuties = false;
+
+			// Get all assignment for the current location for the current date range
+			const assignmentsQueryString = `?locationId=${this.location.id}&start=${this.dutyRangeInfo.startDate}&end=${this.dutyRangeInfo.endDate}`;
+			const assignmentUrl = `api/assignment${assignmentsQueryString}`;
+
+			this.$http.get(assignmentUrl).then((response) => {
+				const assignments = response.data;
+
+				if (assignments) {
+					const dutyRosters: Array<{
+						startDate: string; 
+						endDate: string;
+						locationId: number;
+						assignmentId: number;
+						timezone: string;
+						concurrencyToken: 0;
+					}> = [];
+					
+					assignments.forEach((assignment) => {
+						const splitStartTime = assignment.start.split(":");
+						const splitEndTime = assignment.end.split(":");
+
+						if (this.activeTab === 'Day') {
+							const startDate = moment(this.dutyRangeInfo.startDate)
+								.tz(this.location.timezone)
+								.hours(splitStartTime[0])
+								.minutes(splitStartTime[1])
+								.seconds(splitStartTime[2])
+								.format();
+							
+							const endDate = moment(this.dutyRangeInfo.startDate)
+								.tz(this.location.timezone)
+								.hours(splitEndTime[0])
+								.minutes(splitEndTime[1])
+								.seconds(splitEndTime[1])
+								.format();
+
+							dutyRosters.push({
+								startDate: startDate, 
+								endDate: endDate,
+								locationId: this.location.id,
+								assignmentId: assignment.id,
+								timezone: this.location.timezone,
+								concurrencyToken: 0
+							});
+						} else {
+							this.weekDayNames.forEach((day, index) => {
+								if (!assignment[day]) return;
+															
+								const startDate = moment(this.dutyRangeInfo.startDate)
+									.tz(this.location.timezone)
+									.add(index, 'days')
+									.hours(splitStartTime[0])
+									.minutes(splitStartTime[1])
+									.seconds(splitStartTime[2])
+									.format();
+								
+								const endDate = moment(this.dutyRangeInfo.startDate)
+									.tz(this.location.timezone)
+									.add(index, 'days')
+									.hours(splitEndTime[0])
+									.minutes(splitEndTime[1])
+									.seconds(splitEndTime[1])
+									.format();
+	
+								dutyRosters.push({
+									startDate: startDate, 
+									endDate: endDate,
+									locationId: this.location.id,
+									assignmentId: assignment.id,
+									timezone: this.location.timezone,
+									concurrencyToken: 0
+								});
+							});
+						}
+
+					});
+					
+					const dutyRosterUrl = 'api/dutyroster';
+					// Construct duties for the date range 
+					this.$http.post(dutyRosterUrl, dutyRosters).then((res) => {
+						this.$emit('change', this.activeTab);
+					}, err => {
+						this.errorText = err.response.statusText+' '+err.response.status + '  - ' + moment().format();
+						if (err.response.status != '401') {
+							this.openErrorModal=true;
+						} 
+					});
+				}
+			});
+
+		}
+
 		public tabChanged(tabInfo){
-			this.activetab = tabInfo;
+			this.activeTab = tabInfo;
+			this.UpdateActiveTab(tabInfo);
 			this.loadNewDateRange();
 		}
 
@@ -776,7 +926,8 @@
 				this.UpdateView24h(false)
 			else
 				this.UpdateView24h(true)
-			this.$emit('change',this.activetab);			
+			
+			this.$emit('change',this.activeTab);			
 		}
 
 		public tabMyTeamChanged(tabInfo){
@@ -796,25 +947,25 @@
 		}
 
 		public nextDateRange() {
-			const days =(this.activetab == 'Day')? 1 :7;		
+			const days =(this.activeTab == 'Day')? 1 :7;		
 			this.selectedDate = moment(this.selectedDate).add(days, 'days').format().substring(0,10);
 			this.loadNewDateRange(); 
 		}
 
 		public previousDateRange() {
-			const days =(this.activetab == 'Day')? 1 :7;
+			const days =(this.activeTab == 'Day')? 1 :7;
 			this.selectedDate = moment(this.selectedDate).subtract(days, 'days').format().substring(0,10);
 			this.loadNewDateRange();
 		}
 
 		public loadNewDateRange() {
 
-			const dateType = (this.activetab == 'Day')?'day':'week'
+			const dateType = (this.activeTab == 'Day')?'day':'week'
 			this.selectedDateBegin = moment(this.selectedDate).startOf(dateType).format()
 			this.selectedDateEnd = moment(this.selectedDate).endOf(dateType).format();
 			const dateRange = {startDate: this.selectedDateBegin, endDate: this.selectedDateEnd}
 			this.UpdateDutyRangeInfo(dateRange);
-			this.$emit('change',this.activetab); 
+			this.$emit('change',this.activeTab); 
 		}
 
 		public timeFormat(value , event) {

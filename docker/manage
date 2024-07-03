@@ -101,9 +101,9 @@ build-web() {
     -f './nginx-runtime/Dockerfile' './nginx-runtime/'
   echo -e "===================================================================================================="
 
-  # Apparently vue-cli-tools wants WEB_BASE_HREF -> vue.config.js -> publicPath at compile time. 
-  # I tried using __webpack_public_path__, but the CSS file path and JS file path weren't correctly updated. 
-  # Also note we don't load in environment variables from the arguments here. 
+  # Apparently vue-cli-tools wants WEB_BASE_HREF -> vue.config.js -> publicPath at compile time.
+  # I tried using __webpack_public_path__, but the CSS file path and JS file path weren't correctly updated.
+  # Also note we don't load in environment variables from the arguments here.
   echo -e "\n\n===================================================================================================="
   echo -e "Building the ss-web-artifacts image using s2i ... Using WEB_BASE_HREF: ${WEB_BASE_HREF-/sheriff-scheduling/}"
   echo -e "----------------------------------------------------------------------------------------------------"
@@ -148,6 +148,12 @@ build-web-dev() {
 }
 
 configureEnvironment () {
+
+  if [ -f .env ]; then
+    echo -e "\nLoading environment variables from .env ...\n"
+    source .env
+  fi
+
   for arg in $@; do
     case "$arg" in
       *=*)
@@ -236,7 +242,7 @@ restoreDatabase() {
 
   #docker exec ss_db_1 psql -ac "CREATE USER shersched WITH PASSWORD 'n05dmkFjio1GCUVY';"
   docker exec ss_db_1 psql -ac "GRANT ALL ON DATABASE ${POSTGRESQL_DATABASE} TO shersched;"
-  
+
   cmd="gunzip -c /tmp2/${backupFileName} | psql -v -x -h 127.0.0.1 -d ${POSTGRESQL_DATABASE}"
 
   echo "${cmd}"

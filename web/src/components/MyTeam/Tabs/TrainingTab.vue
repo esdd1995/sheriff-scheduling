@@ -273,32 +273,35 @@
         }
 
         public extractTrainings (){
+            const url = `api/sheriff/${this.userToEdit.id}/trainings`;
 
-            if(this.userToEdit.training)
-                for(const training of this.userToEdit.training)
-                {
-                    const assignedTraining = {} as userTrainingInfoType;
-                    assignedTraining.id = training.id;
-                    assignedTraining.trainingType = training.trainingType;
-                    assignedTraining.trainingTypeId = training.trainingTypeId;
-                    assignedTraining.startDate = moment(training.startDate).tz(this.timezone).format();
-                    assignedTraining.endDate = moment(training.endDate).tz(this.timezone).format();
-                    assignedTraining.expiryDate = training.trainingCertificationExpiry;
-                    assignedTraining.comment = training.comment;
-                    assignedTraining.note = training['note'];
-                    assignedTraining['_rowVariant'] = '';
-                    if(assignedTraining.endDate < this.currentTime)
-                        assignedTraining['_rowVariant'] = 'info';
+            this.$http.get(url).then((response) => {
+                if(response.data)
+                    for(const training of response.data)
+                    {
+                        const assignedTraining = {} as userTrainingInfoType;
+                        assignedTraining.id = training.id;
+                        assignedTraining.trainingType = training.trainingType;
+                        assignedTraining.trainingTypeId = training.trainingTypeId;
+                        assignedTraining.startDate = moment(training.startDate).tz(this.timezone).format();
+                        assignedTraining.endDate = moment(training.endDate).tz(this.timezone).format();
+                        assignedTraining.expiryDate = training.trainingCertificationExpiry;
+                        assignedTraining.comment = training.comment;
+                        assignedTraining.note = training['note'];
+                        assignedTraining['_rowVariant'] = '';
+                        if(assignedTraining.endDate < this.currentTime)
+                            assignedTraining['_rowVariant'] = 'info';
 
-                    if(Vue.filter('isDateFullday')(assignedTraining.startDate,assignedTraining.endDate)){ 
-                        assignedTraining.isFullDay = true;                                        
-                    }else{
-                        assignedTraining.isFullDay = false;                    
+                        if(Vue.filter('isDateFullday')(assignedTraining.startDate,assignedTraining.endDate)){ 
+                            assignedTraining.isFullDay = true;                                        
+                        }else{
+                            assignedTraining.isFullDay = false;                    
+                        }
+                        
+                        this.assignedTrainings.push(assignedTraining)
                     }
-                    
-                    this.assignedTrainings.push(assignedTraining)
-                }
-            this.loadTrainingTypes();
+                this.loadTrainingTypes();
+            });
         }
 
         get filteredAssignedTrainings(){

@@ -65,5 +65,8 @@ jobs:
           git add .
           
           git add ../deploy/dev_values.yaml
+          
+          git commit -m "Update API image tag"
+          git push origin develop  # Update the branch name as needed
 
 

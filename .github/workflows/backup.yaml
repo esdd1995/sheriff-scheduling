@@ -18,7 +18,7 @@ jobs:
           username: ${{ secrets.ARTIFACTORY_USERNAME }}
           password: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - name: Checkout Schema Spy Repo
+      - name: Checkout Backup Container Repo
         id: gitops
         uses: actions/checkout@v4
         with:

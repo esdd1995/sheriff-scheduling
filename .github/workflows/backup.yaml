@@ -18,12 +18,12 @@ jobs:
           username: ${{ secrets.ARTIFACTORY_USERNAME }}
           password: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-      - name: Checkout Schema Spy Repo
+      - name: Checkout Backup Container Repo
         id: gitops
         uses: actions/checkout@v4
         with:
           repository: BCDevOps/backup-container.git
-          ref: master                    
+          ref: 2.9.0
 
       - name: Docker Build Backup Image
         run: |

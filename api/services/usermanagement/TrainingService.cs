@@ -76,6 +76,7 @@ namespace SS.Api.services.usermanagement
                 .Include(s => s.Training.Where(t => t.ExpiryDate == null))
                 .ThenInclude(t => t.TrainingType)
                 .Include(s => s.HomeLocation)
+                .ThenInclude(h => h.Region)
                 .Where(s => trainingReportSearch.regionId == null || s.HomeLocation.RegionId==trainingReportSearch.regionId);
 
             var sheriffs = await sheriffQuery.ToListAsync();
@@ -107,7 +108,8 @@ namespace SS.Api.services.usermanagement
                             excluded = sheriff.Excused,
                             sheriffId = sheriff.Id,
                             status = TrainingStatusTypes.danger,
-                            _rowVariant = "danger"
+                            _rowVariant = "danger",
+                            region = sheriff.HomeLocation.Region.Name
                         });
                     }
                     else
@@ -141,7 +143,8 @@ namespace SS.Api.services.usermanagement
                             excluded = sheriff.Excused,
                             sheriffId = sheriff.Id,
                             status = trainingStatus.status,
-                            _rowVariant = trainingStatus.rowType
+                            _rowVariant = trainingStatus.rowType,
+                            region = sheriff.HomeLocation.Region.Name
                         });
                     }
                 }

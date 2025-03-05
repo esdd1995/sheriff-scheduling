@@ -51,12 +51,33 @@ namespace SS.Db.models.auth
             UserRoles.Select(ur => new RoleWithExpiry
                     {Role = ur.Role, EffectiveDate = ur.EffectiveDate, ExpiryDate = ur.ExpiryDate})
                 .ToList();
+        [AdaptIgnore]
+        [JsonIgnore]
+        public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
+
+        [NotMapped]
+        public virtual ICollection<ActiveGroupWithExpiry> ActiveGroups =>
+            UserGroups.Where(x => x.EffectiveDate <= DateTimeOffset.Now &&
+                                 (x.ExpiryDate == null || x.ExpiryDate > DateTimeOffset.Now))
+                .Select(ur =>
+                    new ActiveGroupWithExpiry
+                    { Group = ur.Group, EffectiveDate = ur.EffectiveDate, ExpiryDate = ur.ExpiryDate })
+                .ToList();
+
 
         [AdaptIgnore]
         [NotMapped]
         public virtual ICollection<Permission> Permissions =>
-            ActiveRoles.
-                SelectMany(x => x.Role.RolePermissions).Select(x => x.Permission).Distinct().ToList();
+            ActiveRoles
+                .SelectMany(x => x.Role.RolePermissions)
+                .Select(x => x.Permission)
+                .Union(
+                    ActiveGroups
+                        .SelectMany(x => x.Group.GroupPermissions)
+                        .Select(x => x.Permission)
+                )
+                .Distinct()
+                .ToList();
 
         [AdaptIgnore]
         [JsonIgnore]

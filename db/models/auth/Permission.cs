@@ -15,6 +15,10 @@ namespace SS.Db.models.auth
         public const string CreateAndAssignRoles = nameof(CreateAndAssignRoles);
         public const string ExpireRoles = nameof(ExpireRoles);
         public const string EditRoles = nameof(EditRoles);
+        public const string ViewGroups = nameof(ViewGroups);
+        public const string CreateAndAssignGroups = nameof(CreateAndAssignGroups);
+        public const string EditGroups = nameof(EditGroups);
+        public const string ExpireGroups = nameof(ExpireGroups);
         public const string CreateTypes = nameof(CreateTypes);
         public const string EditTypes = nameof(EditTypes);
         public const string ExpireTypes = nameof(ExpireTypes);
@@ -44,6 +48,7 @@ namespace SS.Db.models.auth
         public const string ViewOtherProfiles = nameof(ViewOtherProfiles);
         public const string GenerateReports = nameof(GenerateReports);
         public const string AdjustTrainingExpiry = nameof(AdjustTrainingExpiry);
+        public const string ExemptFromTraining = nameof(ExemptFromTraining);
 
         [Key]
         public int Id { get; set; }

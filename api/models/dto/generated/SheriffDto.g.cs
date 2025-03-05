@@ -26,6 +26,7 @@ namespace SS.Api.models.dto.generated
         public LocationDto HomeLocation { get; set; }
         public ICollection<ActiveRoleWithExpiryDto> ActiveRoles { get; set; }
         public ICollection<RoleWithExpiryDto> Roles { get; set; }
+        public ICollection<ActiveGroupWithExpiryDto> ActiveGroups { get; set; }
         public uint ConcurrencyToken { get; set; }
     }
 }

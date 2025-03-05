@@ -52,5 +52,29 @@ namespace SS.Api.controllers
                 return audit;
             }));
         }
+        [HttpGet("groupHistory")]
+        [PermissionClaimAuthorize(perm: Permission.CreateAndAssignGroups)]
+        public async Task<ActionResult<List<AuditDto>>> ViewGroupHistory(Guid sheriffId)
+        {
+            var sheriff = await SheriffService.GetSheriff(sheriffId, null);
+            if (sheriff == null) return NotFound(CouldNotFindSheriffError);
+            if (!PermissionDataFiltersExtensions.HasAccessToLocation(User, Db, sheriff.HomeLocationId)) return Forbid();
+
+            var userGroupIds = Db.UserGroup.AsNoTracking().Where(ur => ur.UserId == sheriffId).Select(ur => ur.Id);
+            var groupHistory = Db.Audit.AsNoTracking().Include(a => a.CreatedBy).Where(e => e.TableName == "UserGroup" &&
+                                                  userGroupIds.Contains(e.KeyValues.RootElement.GetProperty("Id")
+                                                      .GetInt32()))
+                .ToList();
+
+            //Have to select, because we have adapt ignore on these properties. 
+            return Ok(groupHistory.Select(s =>
+            {
+                var audit = s.Adapt<AuditDto>();
+                audit.CreatedBy = s.CreatedBy.Adapt<SheriffDto>();
+                audit.CreatedOn = s.CreatedOn;
+                audit.CreatedById = s.CreatedById;
+                return audit;
+            }));
+        }
     }
 }

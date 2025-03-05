@@ -35,6 +35,14 @@ export interface permissionJsonType {
      description : string;
      concurrencyToken : number;
 }
+export interface groupJsonType {  
+  id : string;
+  name : string;
+  description : string;
+  groupPermissions : groupPermissionsJsonType[];      
+  expiryDate? : string;
+  concurrencyToken : number;  
+}
 
 export interface roleJsonType {  
      id : string;
@@ -50,8 +58,18 @@ export interface userRoleJsonType {
     effectiveDate: string;
     expiryDate: string;  
 }
+export interface userGroupJsonType {  
+    group: groupDataJsonType;
+    effectiveDate: string;
+    expiryDate: string;  
+}
 
 export interface roleDataJsonType { 
+  id: number;
+  name: string;
+  description: string;
+}
+export interface groupDataJsonType { 
   id: number;
   name: string;
   description: string;
@@ -68,10 +86,26 @@ export interface userRoleHistoryJsonType {
   newValuesJson: any;
   oldValuesJson: any;
 }
+export interface userGroupHistoryJsonType {
+  id: number;
+  tableName: string;
+  concurrencyToken: number;
+  createdById: string;
+  createdBy: teamMemberJsonType;
+  createdOn: string;
+  keyValuesJson: userGroupHistoryKeyValuesJsonType;
+  newValuesJson: any;
+  oldValuesJson: any;
+}
 
 export interface userRoleHistoryKeyValuesJsonType {
   Id: number;
   RoleId: number;
+  UserId: string;
+}
+export interface userGroupHistoryKeyValuesJsonType {
+  Id: number;
+  GroupId: number;
   UserId: string;
 }
 
@@ -81,6 +115,14 @@ export interface rolePermissionsJsonType {
     permission : permissionJsonType;
     permissionId : string;
     concurrencyToken : number;
+}
+
+export interface groupPermissionsJsonType {
+  id : string;
+  groupId : string;
+  permission : permissionJsonType;
+  permissionId : string;
+  concurrencyToken : number;
 }
 
 export interface awayLocationsJsontype {  

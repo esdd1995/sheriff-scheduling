@@ -48,6 +48,8 @@ namespace SS.Db.models
         public virtual DbSet<UserRole> UserRole { get; set; }
         public virtual DbSet<Permission> Permission { get; set; }
         public virtual DbSet<Role> Role { get; set; }
+        public virtual DbSet<Group> Group { get; set; }
+        public virtual DbSet<UserGroup> UserGroup { get; set; }
 
         #region Scheduling
 

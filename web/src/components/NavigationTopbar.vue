@@ -31,7 +31,7 @@
                 </b-nav-item-dropdown>
                 <b-nav-item-dropdown text="My Team" dropdown :disabled="!hasPermissionToViewTeamPages">
                     <b-dropdown-item v-if="hasPermissionToViewProfilePage" to="/team-members">My Team Members</b-dropdown-item>
-                    <b-dropdown-item v-if="hasPermissionToViewRolesPage" to="/define-roles-access">Define Roles & Access</b-dropdown-item>
+                    <b-dropdown-item v-if="hasPermissionToViewRolesPage" to="/define-roles-access">Define Roles, Groups & Access</b-dropdown-item>
                     <b-dropdown-item v-if="hasPermissionToGenerateReportsPage" to="/reports">Reports</b-dropdown-item>
                 </b-nav-item-dropdown>
                 <b-nav-item-dropdown text="Manage Types" dropdown :disabled="!hasPermissionToEditManageTypes">

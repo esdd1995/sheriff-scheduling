@@ -165,6 +165,13 @@ namespace SS.Api.services.usermanagement
                 .ToListAsync();
         }
 
+        public async Task<List<UserGroup>> GetSheriffGroups(Guid id)
+        {
+            return await Db.UserGroup.AsNoTracking()
+                .Where(ug => ug.UserId == id)
+                .Include(ug => ug.Group)
+                .ToListAsync();
+        }
         public async Task<List<SheriffTraining>> GetSheriffTrainings(Guid id)
         {
             return await Db.SheriffTraining.AsNoTracking()

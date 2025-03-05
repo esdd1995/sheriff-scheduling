@@ -75,6 +75,41 @@ namespace SS.Api.services.usermanagement
             }
             await Db.SaveChangesAsync();
         }
+        public async Task AssignGroupsToUser(List<UserGroup> assignGroups)
+        {
+            foreach (var assignGroup in assignGroups)
+            {
+                var user = await Db.User.FindAsync(assignGroup.UserId);
+                user.ThrowBusinessExceptionIfNull($"User with id {assignGroup.UserId} does not exist.");
+
+                var group = await Db.Group.AsSingleQuery().Include(g => g.UserGroups).FirstOrDefaultAsync(g => g.Id == assignGroup.GroupId);
+                group.ThrowBusinessExceptionIfNull($"Group with id {assignGroup.GroupId} does not exist.");
+
+                var savedUserGroup = user.UserGroups.FirstOrDefault(ur =>
+                    ur.UserId == assignGroup.UserId &&
+                    ur.GroupId == assignGroup.GroupId);
+
+                if (savedUserGroup != null)
+                {
+                    savedUserGroup.Group = group;
+                    savedUserGroup.User = user;
+                    savedUserGroup.ExpiryDate = assignGroup.ExpiryDate;
+                    savedUserGroup.EffectiveDate = assignGroup.EffectiveDate;
+                    savedUserGroup.ExpiryReason = null;
+                }
+                else
+                {
+                    user.UserGroups.Add(new UserGroup
+                    {
+                        Group = group,
+                        User = user,
+                        ExpiryDate = assignGroup.ExpiryDate,
+                        EffectiveDate = assignGroup.EffectiveDate
+                    });
+                }
+            }
+            await Db.SaveChangesAsync();
+        }
 
         public async Task UnassignRoleFromUser(List<UserRole> unassignRoles)
         {
@@ -88,6 +123,21 @@ namespace SS.Api.services.usermanagement
                     continue;
                 userRole.ExpiryDate = DateTime.UtcNow;
                 userRole.ExpiryReason = unassignRole.ExpiryReason;
+            }
+            await Db.SaveChangesAsync();
+        }
+        public async Task UnassignGroupFromUser(List<UserGroup> unassignGroups)
+        {
+            foreach (var unassignGroup in unassignGroups)
+            {
+                var user = await Db.User.AsSingleQuery().Include(r => r.UserGroups).FirstOrDefaultAsync(u => u.Id == unassignGroup.UserId);
+                user.ThrowBusinessExceptionIfNull($"User with id {unassignGroup.UserId} does not exist.");
+
+                var userGroup = user.UserGroups.FirstOrDefault(r => r.UserId == unassignGroup.UserId && r.GroupId == unassignGroup.GroupId);
+                if (userGroup == null) 
+                    continue;
+                userGroup.ExpiryDate = DateTime.UtcNow;
+                userGroup.ExpiryReason = unassignGroup.ExpiryReason;
             }
             await Db.SaveChangesAsync();
         }

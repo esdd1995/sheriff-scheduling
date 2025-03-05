@@ -167,6 +167,19 @@ namespace SS.Api.controllers.usermanagement
             List<UserRole> sheriffRoles = await SheriffService.GetSheriffRoles(id);
             return Ok(sheriffRoles.Adapt<List<UserRoleDto>>());
         }
+        /// <summary>
+        ///  Get Sheriff Groups.
+        /// </summary>
+        /// <param name="id">Guid of the userid.</param>
+        /// <returns>UserGroupDto[]</returns>
+        [HttpGet]
+        [PermissionClaimAuthorize(perm: Permission.Login)]
+        [Route("{id}/groups")]
+        public async Task<ActionResult<List<UserGroupDto>>> GetSheriffGroups(Guid id)
+        {
+            List<UserGroup> sheriffGroups = await SheriffService.GetSheriffGroups(id);
+            return Ok(sheriffGroups.Adapt<List<UserGroupDto>>());
+        }
 
         /// <summary>
         /// Get Sheriff Trainings.

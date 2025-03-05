@@ -43,6 +43,25 @@ namespace SS.Api.controllers.usermanagement
             await UserService.UnassignRoleFromUser(entity);
             return NoContent();
         }
+        [HttpPut]
+        [Route("assignGroups")]
+        [PermissionClaimAuthorize(perm: Permission.CreateAndAssignGroups)]
+        public async Task<ActionResult> AssignGroups(List<AssignGroupDto> assignGroup)
+        {
+            var entity = assignGroup.Adapt<List<UserGroup>>();
+            await UserService.AssignGroupsToUser(entity);
+            return NoContent();
+        }
+
+        [HttpPut]
+        [Route("unassignGroups")]
+        [PermissionClaimAuthorize(perm: Permission.CreateAndAssignGroups)]
+        public async Task<ActionResult> UnassignGroups(List<UnassignGroupDto> unassignGroup)
+        {
+            var entity = unassignGroup.Adapt<List<UserGroup>>();
+            await UserService.UnassignGroupFromUser(entity);
+            return NoContent();
+        }
 
         [HttpPut]
         [Route("{id}/enable")]

@@ -9,7 +9,7 @@ import ManageAssignments from '@components/DutyRoster/manageAssignments/ManageAs
 import ManageSchedule from '@components/ShiftSchedule/ManageSchedule.vue';
 import DistributeSchedule from '@components/ShiftSchedule/DistributeSchedule.vue';
 import MyTeamMembers from '@components/MyTeam/MyTeamMembers.vue';
-import DefineRolesAccess from '@components/MyTeam/DefineRolesAccess.vue';
+import ManageAccessControl from '@components/MyTeam/ManageAccessControl.vue';
 import ViewReports from '@components/MyTeam/ViewReports.vue';
 import AssignmentTypes from '@components/ManageTypes/AssignmentTypes.vue';
 import LeaveTrainingTypes from '@components/ManageTypes/LeaveTrainingTypes.vue';
@@ -141,7 +141,7 @@ const routes: Array<RouteConfig> = [
 		path: '/define-roles-access',
 		name: 'DefineRolesAccess',
 		beforeEnter: checkPermission,
-		component: DefineRolesAccess,
+		component: ManageAccessControl,
 		meta:{requiredPermission: 'ViewRoles'}  
 	},
 	{

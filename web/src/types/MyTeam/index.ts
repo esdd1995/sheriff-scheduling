@@ -33,8 +33,20 @@ export interface userRoleInfoType{
     effectiveDate: string;
     expiryDate: string;
   }
+export interface userGroupInfoType{
+    value: string;
+    text: string;
+    desc: string;    
+    effectiveDate: string;
+    expiryDate: string;
+  }
 
 export interface roleOptionInfoType{
+    text: string;
+    desc: string;
+    value: string;
+}
+export interface groupOptionInfoType{
     text: string;
     desc: string;
     value: string;
@@ -48,6 +60,14 @@ export interface permissionInfoType {
 
 export interface roleInfoType {
     id?: string;    
+    name?: string;
+    description?: string;
+    expiryDate?: string;
+    permissions?: string[];
+}
+
+export interface groupInfoType {
+    id?: string;
     name?: string;
     description?: string;
     expiryDate?: string;

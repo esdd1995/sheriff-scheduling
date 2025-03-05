@@ -111,6 +111,12 @@
                                         v-on:closeMemberDetails="closeProfileWindow()"/>
                                 </b-tab>
 
+                                <b-tab v-if="editMode && hasPermissionToAssignGroups" title="Groups" class="p-0">
+                                    <group-assignment-tab  
+                                        v-on:change="getSheriffs()"
+                                        v-on:closeMemberDetails="closeProfileWindow()"/>
+                                </b-tab>
+
                                 <b-tab v-if="editMode" title="Acting Rank"> 
                                     <rank-tab 
                                         v-on:change="getSheriffs()"
@@ -187,6 +193,7 @@
     import UserTrainingSummary from './Tabs/UserTrainingSummary.vue';
     import UserLeaveSummary from './Tabs/UserLeaveSummary.vue';
     import TrainingTab from './Tabs/TrainingTab.vue';
+    import GroupAssignmentTab from './Tabs/GroupAssignmentTab.vue';
 
     import { teamMemberJsonType } from '@/types/MyTeam/jsonTypes';
     import {commonInfoType, locationInfoType, userInfoType} from '@/types/common';
@@ -207,7 +214,8 @@
             LocationTab,
             LeaveTab,
             TrainingTab,
-            RankTab
+            RankTab,
+            GroupAssignmentTab
         }        
     })    
     export default class MyTeamMembers extends Vue {
@@ -241,6 +249,7 @@
         hasPermissionToExpireUsers = false;
         hasPermissionToEditUsers = false;
         hasPermissionToAssignRoles = false;
+        hasPermissionToAssignGroups = false;
 
         maxRank = 1000;
 
@@ -285,6 +294,7 @@
             this.hasPermissionToExpireUsers = this.userDetails.permissions.includes("ExpireUsers");
             this.hasPermissionToEditUsers = this.userDetails.permissions.includes("EditUsers");
             this.hasPermissionToAssignRoles = this.userDetails.permissions.includes("CreateAndAssignRoles");
+            this.hasPermissionToAssignGroups = this.userDetails.permissions.includes("CreateAndAssignGroups");
             this.getSheriffs();
             this.sectionHeader = "My Team - " + this.location.name;
             this.itemsPerPage = this.itemsPerRow * this.rowsPerPage;

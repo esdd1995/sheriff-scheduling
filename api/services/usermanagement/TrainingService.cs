@@ -67,8 +67,14 @@ namespace SS.Api.services.usermanagement
         public async Task<List<TrainingReportDto>> GetSheriffsTrainingReports(TrainingReportSearchDto trainingReportSearch)
         {
             Logger.LogInformation("__________Start_Creating_Reports___________");
-            var sheriffQuery = Db.Sheriff.AsNoTracking()
-                .AsSplitQuery()
+            var sheriffQuery = Db.Sheriff.AsNoTracking();
+
+            if (trainingReportSearch.sheriffId != null)
+            {
+                sheriffQuery = sheriffQuery.Where(s => s.Id == trainingReportSearch.sheriffId);
+            }
+
+            sheriffQuery = sheriffQuery.AsSplitQuery()
                 .Where(s => 
                     s.IsEnabled &&
                     (trainingReportSearch.locationId == null || s.HomeLocationId==trainingReportSearch.locationId)

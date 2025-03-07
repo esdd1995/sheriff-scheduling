@@ -132,3 +132,8 @@ export interface trainingStatusInfoType {
     warning: string;
     notify: string; 
 };
+
+export interface sheriffOption {
+    id: string;
+    fullName: string;
+}

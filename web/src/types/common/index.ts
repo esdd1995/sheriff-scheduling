@@ -62,6 +62,7 @@ export interface reportInfoType {
     region: string;
     location: string;
     sheriffName: string;
+    sheriffId: string;
 }
 
 export interface dateRangeInfoType {

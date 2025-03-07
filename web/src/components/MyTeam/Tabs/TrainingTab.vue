@@ -5,7 +5,12 @@
                 <h2 v-if="trainingError" class="mx-1 mt-0"><b-badge v-b-tooltip.hover :title="trainingErrorMsgDesc" style="word-break: break-word;white-space: normal;" variant="danger"> {{trainingErrorMsg}} <b-icon class="ml-3" icon = x-square-fill @click="trainingError = false" /></b-badge></h2>
             </b-card>
             <b-card v-if="!addNewTrainingForm && hasPermissionToEditUsers">
-                <b-button size="sm" variant="success" @click="addNewTraining"><b-icon icon="plus"/> Add </b-button>
+                <div style="display: flex; justify-content: space-between;">
+                    <b-button size="sm" variant="success" @click="addNewTraining"><b-icon icon="plus"/> Add </b-button>
+                    <router-link :to="`/reports?sheriffId=${userToEdit.id}`" class="btn btn-sm btn-info">
+                        <b-icon icon="file-earmark-text"/> Go to Reports
+                    </router-link>
+                </div>
             </b-card>
 
             <b-card v-if="addNewTrainingForm" id="addTrainingForm" class="my-3" :border-variant="addFormColor" style="border:2px solid" body-class="m-0 px-0 py-1">

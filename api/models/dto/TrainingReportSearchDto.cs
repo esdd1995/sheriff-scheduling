@@ -9,6 +9,7 @@ namespace SS.Api.models.dto
         public int? locationId { get; set; }
         public int[]? reportSubtypeIds { get; set; }
         public DateTimeOffset? startDate { get; set; }
-        public DateTimeOffset? endDate { get; set; }        
+        public DateTimeOffset? endDate { get; set; }
+        public Guid? sheriffId { get; set; }
     }
 }

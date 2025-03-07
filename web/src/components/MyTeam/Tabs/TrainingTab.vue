@@ -7,7 +7,7 @@
             <b-card v-if="!addNewTrainingForm && hasPermissionToEditUsers">
                 <div style="display: flex; justify-content: space-between;">
                     <b-button size="sm" variant="success" @click="addNewTraining"><b-icon icon="plus"/> Add </b-button>
-                    <router-link :to="`/reports?sheriffId=${userToEdit.id}`" class="btn btn-sm btn-info">
+                    <router-link v-if="userDetails.permissions.includes('GenerateReports')" :to="`/reports?sheriffId=${userToEdit.id}`" class="btn btn-sm btn-info">
                         <b-icon icon="file-earmark-text"/> Go to Reports
                     </router-link>
                 </div>

@@ -10,7 +10,19 @@
             <b style="font-size:15pt;"><i>Search Criteria:</i></b>
         </b-row>
         <b-card class="search-box mb-4 text-center">
-            <b-row class="ml-1 mt-n2 mx-0"> 
+            <b-row class="ml-1 mt-n2 mx-0">
+                <b-col cols="4">
+                    <v-app class="vuetify">
+                        <label class="h4 p-0 float-left mr-auto"> Sheriff </label>
+                        <v-autocomplete class="mt-2" v-model="reportParameters.sheriffId" :items="sheriffList" item-text="fullName" item-value="id" solo>
+                            <template v-slot:item="data">
+                                <template>
+                                    <v-list-item-content v-text="data.item.fullName"></v-list-item-content>
+                                </template>
+                            </template>    
+                        </v-autocomplete>
+                    </v-app>
+                </b-col> 
                 <b-col cols="2">
                     <b-form-group style="margin:0; height: 2rem;">
                         <label class="h4 mb-2 p-0 float-left">Region</label> 
@@ -64,6 +76,8 @@
                         </b-form-select>
                     </b-form-group>
                 </b-col>           
+            </b-row>
+            <b-row class="mt-4 mx-0">              
                 <b-col cols="4" v-if="reportParameters.reportType && reportParameters.reportType == 'Training'" >
                     <v-app class="vuetify">
                         <label class="h4 mb-2 p-0 float-left mr-auto"> Training Type </label>
@@ -110,11 +124,11 @@
                         </v-select>
                     </v-app>
                 </b-col>
-            </b-row>
-            <b-row class="mt-4 mx-0">                
-                <b-col cols="4">
+                <b-col cols="8">
                     <date-range :dateRange="reportDateRange" @rangeChanged="clearReports()"/>
-                </b-col>                
+                </b-col>
+            </b-row>
+            <b-row class="mt-4 mx-0">              
                 <b-col cols="6" class="text-left">                    
                     <label class="h4 mb-2 p-0 ml-4" >Filter By</label>                                        
                     <b-form-checkbox-group  
@@ -125,7 +139,7 @@
                         :options="Object.values(statusOptions)"                        
                     />
                 </b-col>
-                <b-col cols="2">                    
+                <b-col cols="6">                    
                     <b-button                        
                         style="float:right; padding: 0.25rem 1rem; margin-top:1.5rem;" 
                         :disabled="searching"                        
@@ -241,7 +255,7 @@
     import CustomPagination from "./Components/CustomPagination.vue"
 
     import {reportInfoType, locationInfoType, regionInfoType, dateRangeInfoType} from '@/types/common';
-    import { trainingReportInfoType, trainingStatusInfoType } from '@/types/MyTeam';
+    import { sheriffOption, trainingReportInfoType, trainingStatusInfoType } from '@/types/MyTeam';
     import { leaveTrainingTypeInfoType } from '@/types/ManageTypes';
 
     @Component({
@@ -265,7 +279,7 @@
         error = '';
         updateRegionId = 0;
         printReady = false;
-        reportParameters = {region: 'All', location: 'All', reportSubtype: [0], reportType:'Training'} as reportInfoType;        
+        reportParameters = {region: 'All', location: 'All', reportSubtype: [] as number[], reportType:'Training',} as reportInfoType;        
         reportDateRange  = { startDate:'', endDate:'', valid:false} as dateRangeInfoType
         trainingReportData: trainingReportInfoType[] = []
         filteredTrainingReportData: trainingReportInfoType[] = []
@@ -299,16 +313,19 @@
             {key:"expiryDate",   label:"Certification Expiry Date", thClass: 'border-bottom align-middle text-center', tdClass:'align-middle text-center', sortable: true, thStyle:'width:15%;'},
             {key:"status",       label:"Status",                    thClass: 'border-bottom align-middle text-center', tdClass:'align-middle text-center', sortable: true, thStyle:'width:10%;'}
         ];
+
+        sheriffList: sheriffOption[] = [];
         
         mounted() {   
             this.dataReady = false;
+            this.getSheriffs();
             this.clearReports();
             this.reportParameters.region = 'All';     
             this.reportParameters.location = 'All';
             this.searching = false;          
             this.generatingReport = false;     
             this.locationOptionsList = this.locationList;
-            this.getTrainingTypes();            
+            this.getTrainingTypes();     
         }
 
         public clearReports(){
@@ -343,7 +360,8 @@
                     // reportType: this.reportParameters.reportType,
                     reportSubtypeIds: this.isAllSubtypesSelected? [] : this.reportParameters.reportSubtype,
                     startDate: this.reportDateRange.valid? this.reportDateRange.startDate : null,
-                    endDate: this.reportDateRange.valid? this.reportDateRange.endDate : null
+                    endDate: this.reportDateRange.valid? this.reportDateRange.endDate : null,
+                    sheriffId: this.reportParameters.sheriffId? this.reportParameters.sheriffId : null
                 }
 
                 this.searching = true;
@@ -361,6 +379,34 @@
                     this.searching = false;
                 })
             } 
+        }
+
+        public getSheriffs() {            
+            const url = 'api/sheriff';
+            this.$http.get(url)
+                .then(response => {
+                    if(response.data){
+                        this.sheriffList = response.data.map((s) => {
+                            return {
+                                id: s.id, 
+                                fullName: Vue.filter('capitalizefirst')(s.firstName) + ' ' + Vue.filter('capitalizefirst')(s.lastName)
+                            }
+                        });    
+
+                        // after getting the sheriffs; read query params and set the sheriffId
+                        const queryParams = this.$route.query;
+                        if (queryParams?.sheriffId) {
+                            this.reportParameters.sheriffId = (queryParams.sheriffId || '') as string;
+                            // remove the query params from the url
+                            this.$router.replace({});
+
+                            // generate the report
+                            this.find();
+                        }
+                    }
+                },err => {
+                    console.log(err.response)
+                })
         }
 
         public updateRegion(){
@@ -527,6 +573,7 @@
             display: flex !important;
             align-items: center !important;
             border: 1px solid #adb5bd;
+            background-color: #fff;
         }
 
         .v-text-field.error--text .v-input__control .v-input__slot {

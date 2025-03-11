@@ -552,11 +552,6 @@ namespace SS.Api.services.scheduling
                         aw.StartDate,
                         aw.EndDate,
                         aw.Timezone)));
-                    validationErrors.AddRange(sheriff.Training.Select(aw => PrintSheriffEventConflict<SheriffTraining>(
-                        aw.Sheriff,
-                        aw.StartDate,
-                        aw.EndDate,
-                        aw.Timezone)));
                 }
 
                 if (validationErrors.Any())

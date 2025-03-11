@@ -130,9 +130,10 @@
                             class="mb-1"> {{event}}
                         </li>
                     </ul>
-                    <h4 class="mt-4 mb-0 text-danger">Do you want to override the conflicting event(s) listed above? </h4>
+                    <h4 class="mt-4 mb-0 text-danger">Do you want to override or allow the conflicting event(s) listed above? </h4>
                     <template v-slot:modal-footer>
-                        <b-button variant="danger" @click="saveTraining(trainingToSave, create, true)">Confirm</b-button>
+                        <b-button variant="primary" @click="saveTraining(trainingToSave, create, false, true)">Allow Conflicts</b-button>
+                        <b-button variant="danger" @click="saveTraining(trainingToSave, create, true, false)">Override</b-button>
                         <b-button variant="primary" @click="cancelTrainingOverride()">Cancel</b-button>
                     </template>            
                     <template v-slot:modal-header-close>                 
@@ -372,11 +373,18 @@
             }  
         }
 
-        public saveTraining(body, iscreate, overrideConflicts){
+        public saveTraining(body, iscreate, overrideConflicts, allowConflictingEvents){
                 this.trainingError   = false; 
                 body['sheriffId']= this.userToEdit.id;
                 const method = iscreate? 'post' :'put';            
-                const url = overrideConflicts?'api/sheriff/training?overrideConflicts=true':'api/sheriff/training'  
+                
+                let url;
+                if (allowConflictingEvents) {
+                    url = 'api/sheriff/training?allowConflictingEvents=true';
+                } else {
+                    url = overrideConflicts?'api/sheriff/training?overrideConflicts=true':'api/sheriff/training';  
+                }
+
                 const options = { method: method, url:url, data:body}
                
                 this.$http(options)
@@ -390,6 +398,7 @@
                             this.closeTrainingForm();
                             this.$emit('refresh', this.userToEdit.id)
                         }
+                        if (allowConflictingEvents) this.cancelTrainingOverride();
                         this.closeTrainingForm();
                     }, err=>{
                         const errMsg = err.response.data.error;

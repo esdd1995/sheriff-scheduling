@@ -414,11 +414,11 @@ namespace SS.Api.services.usermanagement
             return await sheriffQuery.ToListAsync();
         }
 
-        public async Task<SheriffTraining> AddSheriffTraining(DutyRosterService dutyRosterService, ShiftService shiftService, SheriffTraining sheriffTraining, bool overrideConflicts)
+        public async Task<SheriffTraining> AddSheriffTraining(DutyRosterService dutyRosterService, ShiftService shiftService, SheriffTraining sheriffTraining, bool overrideConflicts, bool allowConflictingEvents)
         {
             ValidateStartAndEndDates(sheriffTraining.StartDate, sheriffTraining.EndDate);
             await ValidateSheriffExists(sheriffTraining.SheriffId);
-            await ValidateNoOverlapAsync(dutyRosterService, shiftService, sheriffTraining, overrideConflicts);
+            if (!allowConflictingEvents) await ValidateNoOverlapAsync(dutyRosterService, shiftService, sheriffTraining, overrideConflicts);
 
             sheriffTraining.Sheriff = await Db.Sheriff.FindAsync(sheriffTraining.SheriffId);
             sheriffTraining.TrainingType = await Db.LookupCode.FindAsync(sheriffTraining.TrainingTypeId);
@@ -427,7 +427,7 @@ namespace SS.Api.services.usermanagement
             return sheriffTraining;
         }
 
-        public async Task<SheriffTraining> UpdateSheriffTraining(DutyRosterService dutyRosterService, ShiftService shiftService, SheriffTraining sheriffTraining, bool overrideConflicts)
+        public async Task<SheriffTraining> UpdateSheriffTraining(DutyRosterService dutyRosterService, ShiftService shiftService, SheriffTraining sheriffTraining, bool overrideConflicts, bool allowConflictingEvents)
         {
             ValidateStartAndEndDates(sheriffTraining.StartDate, sheriffTraining.EndDate);
             await ValidateSheriffExists(sheriffTraining.SheriffId);
@@ -439,7 +439,7 @@ namespace SS.Api.services.usermanagement
             if (savedTraining.ExpiryDate.HasValue)
                 throw new BusinessLayerException($"{nameof(SheriffTraining)} with the id: {sheriffTraining.Id} has been expired");
 
-            await ValidateNoOverlapAsync(dutyRosterService, shiftService, sheriffTraining, overrideConflicts, sheriffTraining.Id);
+            if (!allowConflictingEvents) await ValidateNoOverlapAsync(dutyRosterService, shiftService, sheriffTraining, overrideConflicts, sheriffTraining.Id);
 
             Db.Entry(savedTraining).CurrentValues.SetValues(sheriffTraining);
             Db.Entry(savedTraining).Property(x => x.SheriffId).IsModified = false;

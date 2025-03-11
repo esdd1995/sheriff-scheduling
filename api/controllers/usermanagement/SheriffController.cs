@@ -405,19 +405,19 @@ namespace SS.Api.controllers.usermanagement
         [HttpPost]
         [Route("training")]
         [PermissionClaimAuthorize(perm: Permission.EditUsers)]
-        public async Task<ActionResult<SheriffTrainingDto>> AddSheriffTraining(SheriffTrainingDto sheriffTrainingDto, bool overrideConflicts = false)
+        public async Task<ActionResult<SheriffTrainingDto>> AddSheriffTraining(SheriffTrainingDto sheriffTrainingDto, bool overrideConflicts = false, bool allowConflictingEvents = false)
         {
             await CheckForAccessToSheriffByLocation(sheriffTrainingDto.SheriffId);
 
             var sheriffTraining = sheriffTrainingDto.Adapt<SheriffTraining>();
-            var createdSheriffTraining = await SheriffService.AddSheriffTraining(DutyRosterService, ShiftService, sheriffTraining, overrideConflicts);
+            var createdSheriffTraining = await SheriffService.AddSheriffTraining(DutyRosterService, ShiftService, sheriffTraining, overrideConflicts, allowConflictingEvents);
             return Ok(createdSheriffTraining.Adapt<SheriffTrainingDto>());
         }
 
         [HttpPut]
         [Route("training")]
         [PermissionClaimAuthorize(perm: Permission.EditUsers)]
-        public async Task<ActionResult<SheriffTrainingDto>> UpdateSheriffTraining(SheriffTrainingDto sheriffTrainingDto, bool overrideConflicts = false)
+        public async Task<ActionResult<SheriffTrainingDto>> UpdateSheriffTraining(SheriffTrainingDto sheriffTrainingDto, bool overrideConflicts = false, bool allowConflictingEvents = false)
         {
             await CheckForAccessToSheriffByLocation<SheriffTraining>(sheriffTrainingDto.Id);
 
@@ -429,7 +429,7 @@ namespace SS.Api.controllers.usermanagement
                     throw new BusinessLayerException("No permission to edit training that has completed.");
             }
 
-            var updatedSheriffTraining = await SheriffService.UpdateSheriffTraining(DutyRosterService, ShiftService, sheriffTraining, overrideConflicts);
+            var updatedSheriffTraining = await SheriffService.UpdateSheriffTraining(DutyRosterService, ShiftService, sheriffTraining, overrideConflicts, allowConflictingEvents);
             return Ok(updatedSheriffTraining.Adapt<SheriffTrainingDto>());
         }
 

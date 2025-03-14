@@ -451,7 +451,7 @@
                 useTextFile: false,
                 useBom: true,
                 useKeysAsHeaders: false,
-                headers: ['Region', 'Location', 'Name', 'Training Type', 'End Date', 'Expiry Date', 'Status']
+                headers: ['Location', 'Name', 'Training Type', 'End Date', 'Expiry Date', 'Status', 'Region']
             };
 
             const reportData: trainingReportInfoType[] = [];
